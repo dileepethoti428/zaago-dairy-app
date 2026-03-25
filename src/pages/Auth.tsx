@@ -143,7 +143,7 @@ export default function Auth() {
       setLoading(true);
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
+          redirectTo: `https://zaago-dairy-app.vercel.app/reset-password`,
         });
         if (error) {
           toast({ title: 'Error', description: error.message, variant: 'destructive' });
