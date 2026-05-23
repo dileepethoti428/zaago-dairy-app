@@ -313,6 +313,7 @@ export type Database = {
           payment_method: string | null
           payout_breakdown: Json | null
           payout_status: string
+          tip_amount: number | null
           updated_at: string | null
         }
         Insert: {
@@ -331,6 +332,7 @@ export type Database = {
           payment_method?: string | null
           payout_breakdown?: Json | null
           payout_status?: string
+          tip_amount?: number | null
           updated_at?: string | null
         }
         Update: {
@@ -349,6 +351,7 @@ export type Database = {
           payment_method?: string | null
           payout_breakdown?: Json | null
           payout_status?: string
+          tip_amount?: number | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2261,6 +2264,7 @@ export type Database = {
           payment_method: string | null
           payment_status: string
           special_instructions: string | null
+          tip_amount: number | null
           total_amount: number
           updated_at: string
         }
@@ -2286,6 +2290,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           special_instructions?: string | null
+          tip_amount?: number | null
           total_amount: number
           updated_at?: string
         }
@@ -2311,6 +2316,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string
           special_instructions?: string | null
+          tip_amount?: number | null
           total_amount?: number
           updated_at?: string
         }
@@ -2530,6 +2536,33 @@ export type Database = {
           id?: string
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      distance_cache: {
+        Row: {
+          created_at: string | null
+          dest_lat: number
+          dest_lng: number
+          distance_km: number
+          origin_lat: number
+          origin_lng: number
+        }
+        Insert: {
+          created_at?: string | null
+          dest_lat: number
+          dest_lng: number
+          distance_km: number
+          origin_lat: number
+          origin_lng: number
+        }
+        Update: {
+          created_at?: string | null
+          dest_lat?: number
+          dest_lng?: number
+          distance_km?: number
+          origin_lat?: number
+          origin_lng?: number
         }
         Relationships: []
       }
@@ -2965,6 +2998,36 @@ export type Database = {
           platform?: string | null
           token?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      fines: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          party_id: string
+          party_type: string
+          reason: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          party_id: string
+          party_type: string
+          reason?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          party_id?: string
+          party_type?: string
+          reason?: string | null
         }
         Relationships: []
       }
@@ -3596,7 +3659,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          body: string
+          body?: string
           created_at?: string | null
           data?: Json | null
           id?: number
@@ -3974,6 +4037,9 @@ export type Database = {
           agent_notification_sent_at: string | null
           assigned_agent_id: string | null
           assignment_type: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           customer_name: string | null
           customer_phone: string | null
@@ -3988,6 +4054,7 @@ export type Database = {
           delivery_time: string | null
           delivery_time_slot: string | null
           distance_km: number | null
+          hidden_by_user: boolean
           id: string
           items: Json
           last_notified_at: string | null
@@ -4007,6 +4074,7 @@ export type Database = {
           pickup_location: Json | null
           pickup_status: string | null
           price_breakdown: Json | null
+          requires_partner_return: boolean
           seller_accepted_at: string | null
           seller_id: string | null
           seller_latitude: number | null
@@ -4017,6 +4085,7 @@ export type Database = {
           special_instructions: string | null
           status: string
           subscription_id: string | null
+          tip_amount: number | null
           total: number
           tracking_id: string
           updated_at: string
@@ -4033,6 +4102,9 @@ export type Database = {
           agent_notification_sent_at?: string | null
           assigned_agent_id?: string | null
           assignment_type?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
@@ -4047,6 +4119,7 @@ export type Database = {
           delivery_time?: string | null
           delivery_time_slot?: string | null
           distance_km?: number | null
+          hidden_by_user?: boolean
           id?: string
           items: Json
           last_notified_at?: string | null
@@ -4066,6 +4139,7 @@ export type Database = {
           pickup_location?: Json | null
           pickup_status?: string | null
           price_breakdown?: Json | null
+          requires_partner_return?: boolean
           seller_accepted_at?: string | null
           seller_id?: string | null
           seller_latitude?: number | null
@@ -4076,6 +4150,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           subscription_id?: string | null
+          tip_amount?: number | null
           total: number
           tracking_id: string
           updated_at?: string
@@ -4092,6 +4167,9 @@ export type Database = {
           agent_notification_sent_at?: string | null
           assigned_agent_id?: string | null
           assignment_type?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           customer_name?: string | null
           customer_phone?: string | null
@@ -4106,6 +4184,7 @@ export type Database = {
           delivery_time?: string | null
           delivery_time_slot?: string | null
           distance_km?: number | null
+          hidden_by_user?: boolean
           id?: string
           items?: Json
           last_notified_at?: string | null
@@ -4125,6 +4204,7 @@ export type Database = {
           pickup_location?: Json | null
           pickup_status?: string | null
           price_breakdown?: Json | null
+          requires_partner_return?: boolean
           seller_accepted_at?: string | null
           seller_id?: string | null
           seller_latitude?: number | null
@@ -4135,6 +4215,7 @@ export type Database = {
           special_instructions?: string | null
           status?: string
           subscription_id?: string | null
+          tip_amount?: number | null
           total?: number
           tracking_id?: string
           updated_at?: string
@@ -4532,6 +4613,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "payouts_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "payouts_seller_id_fkey"
             columns: ["seller_id"]
@@ -4995,6 +5083,7 @@ export type Database = {
           benefits: string[] | null
           category: string | null
           category_id: string | null
+          cost_price: number | null
           created_at: string
           description: string | null
           discount_percentage: number | null
@@ -5026,6 +5115,7 @@ export type Database = {
           benefits?: string[] | null
           category?: string | null
           category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount_percentage?: number | null
@@ -5057,6 +5147,7 @@ export type Database = {
           benefits?: string[] | null
           category?: string | null
           category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount_percentage?: number | null
@@ -5118,12 +5209,14 @@ export type Database = {
           created_at: string
           date_of_birth: string | null
           default_address: Json | null
+          deleted_at: string | null
           device_info: Json | null
           documents_submitted: boolean | null
           documents_verified: boolean | null
           emergency_contact: string | null
           full_name: string | null
           id: string
+          is_deleted: boolean
           notification_preferences: Json | null
           onesignal_external_user_id: string | null
           onesignal_player_id: string | null
@@ -5150,12 +5243,14 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           default_address?: Json | null
+          deleted_at?: string | null
           device_info?: Json | null
           documents_submitted?: boolean | null
           documents_verified?: boolean | null
           emergency_contact?: string | null
           full_name?: string | null
           id?: string
+          is_deleted?: boolean
           notification_preferences?: Json | null
           onesignal_external_user_id?: string | null
           onesignal_player_id?: string | null
@@ -5182,12 +5277,14 @@ export type Database = {
           created_at?: string
           date_of_birth?: string | null
           default_address?: Json | null
+          deleted_at?: string | null
           device_info?: Json | null
           documents_submitted?: boolean | null
           documents_verified?: boolean | null
           emergency_contact?: string | null
           full_name?: string | null
           id?: string
+          is_deleted?: boolean
           notification_preferences?: Json | null
           onesignal_external_user_id?: string | null
           onesignal_player_id?: string | null
@@ -5204,6 +5301,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
@@ -5402,7 +5506,21 @@ export type Database = {
             foreignKeyName: "referral_rewards_referred_id_fkey"
             columns: ["referred_id"]
             isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_rewards_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_rewards_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -5838,6 +5956,10 @@ export type Database = {
       }
       sellers: {
         Row: {
+          aadhaar_back_url: string | null
+          aadhaar_front_url: string | null
+          aadhaar_number: string | null
+          aadhaar_verified: boolean
           account_holder_name: string | null
           account_number: string | null
           account_type: string | null
@@ -5856,20 +5978,32 @@ export type Database = {
           deletion_requested_by: string | null
           device_info: Json | null
           email: string
+          fssai_license_url: string | null
+          fssai_number: string | null
+          fssai_verified: boolean
           id: string
           ifsc_code: string | null
           is_bank_verified: boolean | null
           is_deactivated: boolean | null
           is_deleted: boolean | null
+          kyc_status: string | null
+          kyc_submitted_at: string | null
+          kyc_verified_at: string | null
+          kyc_verified_by: string | null
           latitude: number | null
           location_id: number | null
           location_verified: boolean | null
           longitude: number | null
           name: string
           onesignal_player_id: string | null
+          pan_image_url: string | null
+          pan_number: string | null
+          pan_verified: boolean
           phone: string | null
           privacy_accepted_at: string | null
           rejection_reason: string | null
+          selfie_url: string | null
+          selfie_verified: boolean
           status: string
           terms_accepted_at: string | null
           terms_version: string | null
@@ -5877,6 +6011,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          aadhaar_back_url?: string | null
+          aadhaar_front_url?: string | null
+          aadhaar_number?: string | null
+          aadhaar_verified?: boolean
           account_holder_name?: string | null
           account_number?: string | null
           account_type?: string | null
@@ -5895,20 +6033,32 @@ export type Database = {
           deletion_requested_by?: string | null
           device_info?: Json | null
           email: string
+          fssai_license_url?: string | null
+          fssai_number?: string | null
+          fssai_verified?: boolean
           id?: string
           ifsc_code?: string | null
           is_bank_verified?: boolean | null
           is_deactivated?: boolean | null
           is_deleted?: boolean | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
+          kyc_verified_at?: string | null
+          kyc_verified_by?: string | null
           latitude?: number | null
           location_id?: number | null
           location_verified?: boolean | null
           longitude?: number | null
           name: string
           onesignal_player_id?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          pan_verified?: boolean
           phone?: string | null
           privacy_accepted_at?: string | null
           rejection_reason?: string | null
+          selfie_url?: string | null
+          selfie_verified?: boolean
           status?: string
           terms_accepted_at?: string | null
           terms_version?: string | null
@@ -5916,6 +6066,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          aadhaar_back_url?: string | null
+          aadhaar_front_url?: string | null
+          aadhaar_number?: string | null
+          aadhaar_verified?: boolean
           account_holder_name?: string | null
           account_number?: string | null
           account_type?: string | null
@@ -5934,20 +6088,32 @@ export type Database = {
           deletion_requested_by?: string | null
           device_info?: Json | null
           email?: string
+          fssai_license_url?: string | null
+          fssai_number?: string | null
+          fssai_verified?: boolean
           id?: string
           ifsc_code?: string | null
           is_bank_verified?: boolean | null
           is_deactivated?: boolean | null
           is_deleted?: boolean | null
+          kyc_status?: string | null
+          kyc_submitted_at?: string | null
+          kyc_verified_at?: string | null
+          kyc_verified_by?: string | null
           latitude?: number | null
           location_id?: number | null
           location_verified?: boolean | null
           longitude?: number | null
           name?: string
           onesignal_player_id?: string | null
+          pan_image_url?: string | null
+          pan_number?: string | null
+          pan_verified?: boolean
           phone?: string | null
           privacy_accepted_at?: string | null
           rejection_reason?: string | null
+          selfie_url?: string | null
+          selfie_verified?: boolean
           status?: string
           terms_accepted_at?: string | null
           terms_version?: string | null
@@ -7565,6 +7731,126 @@ export type Database = {
       }
     }
     Views: {
+      active_profiles: {
+        Row: {
+          address: string | null
+          admin_verification_photo: string | null
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
+          avatar_url: string | null
+          commission_rate: number | null
+          created_at: string | null
+          date_of_birth: string | null
+          default_address: Json | null
+          deleted_at: string | null
+          device_info: Json | null
+          documents_submitted: boolean | null
+          documents_verified: boolean | null
+          emergency_contact: string | null
+          full_name: string | null
+          id: string | null
+          is_deleted: boolean | null
+          notification_preferences: Json | null
+          onesignal_external_user_id: string | null
+          onesignal_player_id: string | null
+          phone: string | null
+          photo_uploaded_at: string | null
+          photo_url: string | null
+          photo_verified: boolean | null
+          referral_applied_at: string | null
+          referral_code: string | null
+          referred_by: string | null
+          rejection_reason: string | null
+          submission_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          admin_verification_photo?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          avatar_url?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          default_address?: Json | null
+          deleted_at?: string | null
+          device_info?: Json | null
+          documents_submitted?: boolean | null
+          documents_verified?: boolean | null
+          emergency_contact?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_deleted?: boolean | null
+          notification_preferences?: Json | null
+          onesignal_external_user_id?: string | null
+          onesignal_player_id?: string | null
+          phone?: string | null
+          photo_uploaded_at?: string | null
+          photo_url?: string | null
+          photo_verified?: boolean | null
+          referral_applied_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          rejection_reason?: string | null
+          submission_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          admin_verification_photo?: string | null
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          avatar_url?: string | null
+          commission_rate?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          default_address?: Json | null
+          deleted_at?: string | null
+          device_info?: Json | null
+          documents_submitted?: boolean | null
+          documents_verified?: boolean | null
+          emergency_contact?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_deleted?: boolean | null
+          notification_preferences?: Json | null
+          onesignal_external_user_id?: string | null
+          onesignal_player_id?: string | null
+          phone?: string | null
+          photo_uploaded_at?: string | null
+          photo_url?: string | null
+          photo_verified?: boolean | null
+          referral_applied_at?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          rejection_reason?: string | null
+          submission_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "active_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_next_delivery: {
         Row: {
           assigned_agent_id: string | null
@@ -8253,6 +8539,10 @@ export type Database = {
         Returns: number
       }
       can_register_admin: { Args: never; Returns: boolean }
+      cancel_accepted_order: {
+        Args: { p_order_id: string; p_reason: string; p_seller_user_id: string }
+        Returns: Json
+      }
       cancel_vacation_and_resume_subscription:
         | { Args: { p_vacation_id: string }; Returns: boolean }
         | { Args: { p_user_id?: string; p_vacation_id: string }; Returns: Json }
@@ -8440,23 +8730,15 @@ export type Database = {
         }
         Returns: Json
       }
-      complete_delivery_zepto:
-        | {
-            Args: {
-              p_agent_id: string
-              p_order_id: string
-              p_payment_method?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_live_distance_km?: number
-              p_order_id: string
-              p_payment_method: string
-            }
-            Returns: Json
-          }
+      complete_delivery_zepto: {
+        Args: {
+          p_agent_id: string
+          p_live_distance_km?: number
+          p_order_id: string
+          p_payment_method?: string
+        }
+        Returns: Json
+      }
       complete_qr_delivery_safe: {
         Args: {
           p_agent_id: string
@@ -8726,6 +9008,14 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_agent_distance_stats: { Args: { agent_uuid: string }; Returns: Json }
+      get_agent_earnings_series: {
+        Args: { target_agent_id: string; time_period?: string }
+        Returns: {
+          bucket_label: string
+          earnings: number
+          orders: number
+        }[]
+      }
       get_agent_hours_today: { Args: { agent_uuid: string }; Returns: number }
       get_agent_orders_delivered_today: {
         Args: never
@@ -8875,6 +9165,11 @@ export type Database = {
         Args: { agent_email: string }
         Returns: Json
       }
+      get_agent_total_hours: { Args: { agent_uuid: string }; Returns: number }
+      get_agent_work_hours_breakdown: {
+        Args: { agent_uuid: string }
+        Returns: Json
+      }
       get_agent_work_stats: { Args: { agent_uuid: string }; Returns: Json }
       get_aggregate_milk_data: {
         Args: { p_milk_type: string; p_period: string }
@@ -8926,6 +9221,16 @@ export type Database = {
         Returns: Json
       }
       get_cart_total: { Args: { cart_user_id: string }; Returns: number }
+      get_center_partner_names: {
+        Args: never
+        Returns: {
+          center_code: string
+          center_id: string
+          center_name: string
+          partner_name: string
+          partner_phone: string
+        }[]
+      }
       get_current_ist_date: { Args: never; Returns: string }
       get_current_user_category: { Args: never; Returns: Json }
       get_current_user_role: {
@@ -9219,6 +9524,14 @@ export type Database = {
           order_count: number
         }[]
       }
+      get_seller_earnings_series: {
+        Args: { target_seller_id: string; time_period?: string }
+        Returns: {
+          bucket_label: string
+          earnings: number
+          orders: number
+        }[]
+      }
       get_seller_order_items: {
         Args: { order_items: Json; target_seller_id: string }
         Returns: {
@@ -9268,29 +9581,41 @@ export type Database = {
         Args: { target_seller_id: string }
         Returns: Json
       }
-      get_seller_performance_summary: {
-        Args: { seller_user_id: string; time_range?: string }
-        Returns: {
-          avg_daily_orders: number
-          completion_rate: number
-          delivered_orders: number
-          failed_orders: number
-          total_orders: number
-          total_revenue: number
-        }[]
-      }
-      get_seller_performance_trends: {
-        Args: { seller_user_id: string; time_range?: string }
-        Returns: {
-          completion_rate: number
-          delivered_orders: number
-          failed_orders: number
-          period_label: string
-          period_start: string
-          total_orders: number
-          total_revenue: number
-        }[]
-      }
+      get_seller_performance_summary:
+        | {
+            Args: { seller_user_id: string; time_range?: string }
+            Returns: {
+              avg_daily_orders: number
+              completion_rate: number
+              delivered_orders: number
+              failed_orders: number
+              total_orders: number
+              total_revenue: number
+            }[]
+          }
+        | { Args: { seller_uuid: string }; Returns: Json }
+      get_seller_performance_trends:
+        | {
+            Args: { seller_user_id: string; time_range?: string }
+            Returns: {
+              completion_rate: number
+              delivered_orders: number
+              failed_orders: number
+              period_label: string
+              period_start: string
+              total_orders: number
+              total_revenue: number
+            }[]
+          }
+        | {
+            Args: { days_back?: number; seller_uuid: string }
+            Returns: {
+              daily_customers: number
+              daily_orders: number
+              daily_revenue: number
+              trend_date: string
+            }[]
+          }
       get_seller_sales_analytics: {
         Args: { target_seller_id: string; time_period?: string }
         Returns: Json
@@ -9316,19 +9641,8 @@ export type Database = {
         | { Args: { seller_user_id: string }; Returns: Json }
         | { Args: { period?: string; seller_user_id: string }; Returns: Json }
       get_seller_stats_with_period: {
-        Args: { period?: string; seller_user_id: string }
-        Returns: {
-          active_orders: number
-          active_subscriptions: number
-          delivered_count: number
-          pending_revenue: number
-          pending_subscription_revenue: number
-          projected_daily_subscription: number
-          regular_revenue: number
-          subscription_revenue: number
-          total_products: number
-          total_revenue: number
-        }[]
+        Args: { period?: string; seller_uuid: string }
+        Returns: Json
       }
       get_seller_subscription_handover_data: {
         Args: { handover_date: string; seller_user_id: string }
@@ -9819,6 +10133,7 @@ export type Database = {
       reset_daily_agent_counters: { Args: never; Returns: undefined }
       reset_daily_delivery_counts: { Args: never; Returns: undefined }
       resolve_agent_email: { Args: { identifier: string }; Returns: string }
+      restore_profile: { Args: { _user_id: string }; Returns: undefined }
       resume_expired_vacations: { Args: never; Returns: Json }
       safe_complete_delivery: {
         Args: {
@@ -9899,6 +10214,7 @@ export type Database = {
         }
         Returns: Json
       }
+      soft_delete_my_profile: { Args: never; Returns: undefined }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
