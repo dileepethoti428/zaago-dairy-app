@@ -122,6 +122,7 @@ function formatCurrency(amount: number): string {
 // Daily Collection Report PDF
 export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   // Always show center name if available (not "All Centers")
   const centerDisplay = data.centerName && data.centerName !== 'All Centers' 
@@ -172,18 +173,21 @@ export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
     foot: [['', 'TOTAL', '', totalQty.toFixed(2), avgFat.toFixed(1), avgSnf.toFixed(1), '', formatCurrency(totalAmt)]],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
       fontSize: 8,
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
       fontSize: 8,
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 8,
       cellPadding: 2,
       overflow: 'linebreak',
@@ -210,6 +214,7 @@ export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
 // Farmer-wise 15-Day Statement PDF
 export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   const startY = addHeader(doc, {
     appName: 'Milk Procurement System',
@@ -249,16 +254,19 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
     foot: [['', 'TOTAL', data.totalLitres.toFixed(2), '', '', '', formatCurrency(data.totalAmount)]],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 9,
       cellPadding: 3,
     },
@@ -306,6 +314,7 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
 // Settlement Summary PDF
 export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   const startY = addHeader(doc, {
     appName: 'Milk Procurement System',
@@ -351,16 +360,19 @@ export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF
     foot: [['', 'GRAND TOTAL', data.totalMilk.toFixed(2), formatCurrency(data.totalAmount), '']],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 9,
       cellPadding: 3,
     },
@@ -446,6 +458,7 @@ export interface CollectionReportPDFData {
 
 export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
 
   // Always show center name if available
   const centerDisplay = data.centerName && data.centerName !== 'All Centers' && data.centerName !== 'Collection Center'
@@ -502,18 +515,21 @@ export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPD
     ],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
       fontSize: 8,
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
       fontSize: 8,
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 8,
       cellPadding: 2,
       overflow: 'linebreak',
