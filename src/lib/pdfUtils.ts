@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
+import { registerTeluguFont, TELUGU_FONT } from './pdfFonts';
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -78,17 +79,17 @@ function addHeader(doc: jsPDF, header: PDFHeader) {
   
   // App name
   doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(header.appName, pageWidth / 2, 15, { align: 'center' });
   
   // Collection center
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(header.collectionCenter, pageWidth / 2, 22, { align: 'center' });
   
   // Report type
   doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(header.reportType, pageWidth / 2, 32, { align: 'center' });
   
   // Line separator
@@ -103,7 +104,7 @@ function addFooter(doc: jsPDF) {
   const pageHeight = doc.internal.pageSize.getHeight();
   
   doc.setFontSize(8);
-  doc.setFont('helvetica', 'italic');
+  doc.setFont(TELUGU_FONT, 'italic');
   doc.setTextColor(128, 128, 128);
   
   const generatedDate = format(new Date(), 'dd MMM yyyy, HH:mm');
@@ -121,6 +122,7 @@ function formatCurrency(amount: number): string {
 // Daily Collection Report PDF
 export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   // Always show center name if available (not "All Centers")
   const centerDisplay = data.centerName && data.centerName !== 'All Centers' 
@@ -135,10 +137,10 @@ export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
   
   // Date and summary
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(`Date: ${format(new Date(data.date), 'dd MMMM yyyy')}`, 14, startY + 5);
   
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(`Total Milk Collected: ${data.totalMilk.toFixed(2)} Litres`, 14, startY + 12);
   doc.text(`Total Farmers: ${data.totalFarmers}`, 14, startY + 19);
   
@@ -171,18 +173,21 @@ export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
     foot: [['', 'TOTAL', '', totalQty.toFixed(2), avgFat.toFixed(1), avgSnf.toFixed(1), '', formatCurrency(totalAmt)]],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
       fontSize: 8,
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
       fontSize: 8,
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 8,
       cellPadding: 2,
       overflow: 'linebreak',
@@ -209,6 +214,7 @@ export function generateDailyCollectionPDF(data: DailyCollectionData): jsPDF {
 // Farmer-wise 15-Day Statement PDF
 export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   const startY = addHeader(doc, {
     appName: 'Milk Procurement System',
@@ -218,16 +224,16 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
   
   // Farmer details
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text('Farmer Details:', 14, startY + 5);
   
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(`Name: ${data.farmerName}`, 14, startY + 12);
   doc.text(`ID: ${data.farmerId}`, 14, startY + 19);
   doc.text(`Village: ${data.village || 'N/A'}`, 14, startY + 26);
   
   // Period
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(`Settlement Period: ${format(new Date(data.startDate), 'dd MMM')} - ${format(new Date(data.endDate), 'dd MMM yyyy')}`, 14, startY + 36);
   
   // Daily entries table
@@ -248,16 +254,19 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
     foot: [['', 'TOTAL', data.totalLitres.toFixed(2), '', '', '', formatCurrency(data.totalAmount)]],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 9,
       cellPadding: 3,
     },
@@ -280,11 +289,11 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
   doc.roundedRect(14, finalY + 10, 180, 35, 3, 3, 'FD');
   
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text('Payment Summary', 20, finalY + 20);
   
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(`Total Litres: ${data.totalLitres.toFixed(2)} L`, 20, finalY + 28);
   doc.text(`Total Payable: ${formatCurrency(data.totalAmount)}`, 20, finalY + 36);
   
@@ -293,7 +302,7 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
   doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
   doc.roundedRect(140, finalY + 18, 45, 20, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(data.paymentStatus.toUpperCase(), 162.5, finalY + 30, { align: 'center' });
   doc.setTextColor(0, 0, 0);
   
@@ -305,6 +314,7 @@ export function generateFarmerStatementPDF(data: FarmerStatementData): jsPDF {
 // Settlement Summary PDF
 export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
   
   const startY = addHeader(doc, {
     appName: 'Milk Procurement System',
@@ -314,7 +324,7 @@ export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF
   
   // Period and status
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(`Period: ${format(new Date(data.startDate), 'dd MMM')} - ${format(new Date(data.endDate), 'dd MMM yyyy')}`, 14, startY + 5);
   
   const statusText = data.status.toUpperCase();
@@ -329,7 +339,7 @@ export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF
   
   // Summary stats
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(`Total Milk Collected: ${data.totalMilk.toFixed(2)} Litres`, 14, startY + 16);
   doc.text(`Total Payable Amount: ${formatCurrency(data.totalAmount)}`, 14, startY + 23);
   doc.text(`Total Farmers: ${data.farmers.length}`, 14, startY + 30);
@@ -350,16 +360,19 @@ export function generateSettlementSummaryPDF(data: SettlementSummaryData): jsPDF
     foot: [['', 'GRAND TOTAL', data.totalMilk.toFixed(2), formatCurrency(data.totalAmount), '']],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 9,
       cellPadding: 3,
     },
@@ -445,6 +458,7 @@ export interface CollectionReportPDFData {
 
 export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPDF {
   const doc = new jsPDF();
+  registerTeluguFont(doc);
 
   // Always show center name if available
   const centerDisplay = data.centerName && data.centerName !== 'All Centers' && data.centerName !== 'Collection Center'
@@ -459,7 +473,7 @@ export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPD
 
   // Period
   doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont(TELUGU_FONT, 'bold');
   doc.text(
     `Period: ${format(new Date(data.startDate), 'dd MMM yyyy')} - ${format(new Date(data.endDate), 'dd MMM yyyy')}`,
     14,
@@ -467,7 +481,7 @@ export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPD
   );
 
   // Summary stats
-  doc.setFont('helvetica', 'normal');
+  doc.setFont(TELUGU_FONT, 'normal');
   doc.text(`Total Milk Collected: ${data.totalLitres.toFixed(2)} Litres`, 14, startY + 14);
   doc.text(`Total Amount: ${formatCurrency(data.totalAmount)}`, 14, startY + 21);
   doc.text(`Total Farmers: ${data.totalFarmers}`, 14, startY + 28);
@@ -501,18 +515,21 @@ export function generateCollectionReportPDF(data: CollectionReportPDFData): jsPD
     ],
     theme: 'striped',
     headStyles: {
+      font: TELUGU_FONT,
       fillColor: [76, 175, 80],
       textColor: 255,
       fontStyle: 'bold',
       fontSize: 8,
     },
     footStyles: {
+      font: TELUGU_FONT,
       fillColor: [240, 240, 240],
       textColor: 0,
       fontStyle: 'bold',
       fontSize: 8,
     },
     styles: {
+      font: TELUGU_FONT,
       fontSize: 8,
       cellPadding: 2,
       overflow: 'linebreak',
