@@ -1,50 +1,59 @@
+## Problem
 
-## Root Cause
+PDF reports (Daily Collection, Farmer Statement, Settlement Summary, Collection Report) show Telugu farmer names as boxes/garbled text. This is because `jsPDF` uses the built-in `helvetica` font, which only supports Latin (WinAnsi) characters — it cannot render Telugu glyphs.
 
-The code in `Auth.tsx` (line 146) uses:
-```typescript
-redirectTo: `${window.location.origin}/reset-password`
-```
+In your screenshot, "Eswaramma" renders only because it's English. A Telugu name like "ఈశ్వరమ్మ" would appear as empty boxes or missing glyphs.
 
-When the app is running at the Lovable preview URL (`https://id-preview--...lovable.app`), `window.location.origin` resolves to that preview URL — **not** `https://zaago-dairy-app.vercel.app`. Supabase sends the reset email with whichever `redirectTo` was passed at the time the email was requested.
+## Fix: Embed a Telugu-capable Unicode font into jsPDF
 
-Additionally, Supabase has an **"Allowed Redirect URLs"** allowlist. If the URL passed in `redirectTo` is not on that list, Supabase silently falls back to the **Site URL** configured in your project — which is currently set to `https://www.zaago.online/`, explaining why you end up there.
+Use **Noto Sans Telugu** (Google's free Unicode font with full Telugu + Latin coverage) and register it with jsPDF so it can render both English and Telugu in the same document.
 
----
+### Steps
 
-## What Needs to Be Done
+1. **Add font file**
+   - Download `NotoSansTelugu-Regular.ttf` and `NotoSansTelugu-Bold.ttf` from Google Fonts.
+   - Place them in `src/assets/fonts/`.
+   - Convert to base64 (one-time, at build) and export as TS modules: `src/assets/fonts/NotoSansTelugu.ts` exporting `notoSansTeluguRegular` and `notoSansTeluguBold` base64 strings.
 
-### 1. Fix the code — hardcode the production redirect URL
+2. **Create a font registration helper**
+   - New file: `src/lib/pdfFonts.ts`
+   - Export `registerTeluguFont(doc: jsPDF)` that:
+     - Calls `doc.addFileToVFS("NotoSansTelugu-Regular.ttf", notoSansTeluguRegular)`
+     - Calls `doc.addFont("NotoSansTelugu-Regular.ttf", "NotoSansTelugu", "normal")`
+     - Same for bold variant with style `"bold"`
+     - Calls `doc.setFont("NotoSansTelugu")` to make it the default for the document.
 
-Change line 146 in `src/pages/Auth.tsx` from:
-```typescript
-redirectTo: `${window.location.origin}/reset-password`,
-```
-to:
-```typescript
-redirectTo: `https://zaago-dairy-app.vercel.app/reset-password`,
-```
+3. **Update `src/lib/pdfUtils.ts`**
+   - At the top of `generateDailyCollectionPDF`, `generateFarmerStatementPDF`, `generateSettlementSummaryPDF`, and `generateCollectionReportPDF`, call `registerTeluguFont(doc)` right after `const doc = new jsPDF()`.
+   - Replace all `doc.setFont('helvetica', ...)` calls with `doc.setFont('NotoSansTelugu', ...)`.
+   - In every `autoTable(...)` config, add:
+     ```ts
+     styles: { font: 'NotoSansTelugu', ... },
+     headStyles: { font: 'NotoSansTelugu', ... },
+     footStyles: { font: 'NotoSansTelugu', ... },
+     ```
+     so table cells (which contain farmer names) also use the Telugu-capable font.
 
-This ensures the reset email always points to your Vercel app regardless of where the code runs.
+### Why this works
 
-### 2. Supabase Dashboard — 3 settings to update (you do this, not code)
+- `addFileToVFS` + `addFont` registers the TTF inside the PDF.
+- Noto Sans Telugu includes both Latin and Telugu glyphs, so English headers/numbers and Telugu names render correctly in the same document.
+- Embedding adds ~300–400 KB per font weight to the bundle (lazy-loadable if needed later).
 
-You need to update these in **Supabase Dashboard → Authentication → URL Configuration**:
-
-| Setting | Value to set |
-|---|---|
-| **Site URL** | `https://zaago-dairy-app.vercel.app` |
-| **Redirect URLs** (add both) | `https://zaago-dairy-app.vercel.app/**` |
-| | `https://zaago-dairy-app.vercel.app/reset-password` |
-
-Direct link: `https://supabase.com/dashboard/project/amhpjsmubciahslghobw/auth/url-configuration`
-
-Without these, Supabase will reject or ignore the `redirectTo` and fall back to the Site URL (`zaago.online`).
-
----
-
-## Files Changed
+### Files changed
 
 | File | Change |
 |---|---|
-| `src/pages/Auth.tsx` | Hardcode `redirectTo` to `https://zaago-dairy-app.vercel.app/reset-password` |
+| `src/assets/fonts/NotoSansTelugu-Regular.ttf` | New — font file |
+| `src/assets/fonts/NotoSansTelugu-Bold.ttf` | New — font file |
+| `src/assets/fonts/NotoSansTelugu.ts` | New — exports base64 font strings |
+| `src/lib/pdfFonts.ts` | New — `registerTeluguFont(doc)` helper |
+| `src/lib/pdfUtils.ts` | Register font + switch `setFont` and autoTable `font` to `NotoSansTelugu` in all 4 generators |
+
+### Note on bundle size
+
+Each font weight is ~300 KB as base64. If you'd prefer to keep it smaller, I can:
+- Use only the Regular weight (skip Bold, simulate bold via styling) — saves ~300 KB, or
+- Subset the font to only Telugu + basic Latin glyphs (~80 KB total) using `fonttools` — best size, slightly more setup.
+
+Default plan uses full Regular + Bold for simplicity. Let me know if you'd like the subset approach instead.
