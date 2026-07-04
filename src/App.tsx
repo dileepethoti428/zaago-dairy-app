@@ -47,7 +47,16 @@ const App = () => (
             <CenterProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/mfa" element={<MfaChallenge />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route
+                  path="/security"
+                  element={
+                    <ProtectedRoute>
+                      <Security />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/"
                   element={
