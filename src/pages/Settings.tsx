@@ -431,6 +431,17 @@ export default function Settings() {
           <CardContent className="space-y-2">
             <button
               className="flex w-full items-center justify-between rounded-lg bg-secondary p-3 text-left transition-colors hover:bg-secondary/80"
+              onClick={() => navigate('/security')}
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Security & 2FA</span>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+
+            <button
+              className="flex w-full items-center justify-between rounded-lg bg-secondary p-3 text-left transition-colors hover:bg-secondary/80"
               onClick={() => navigate('/reports')}
             >
               <div className="flex items-center gap-3">

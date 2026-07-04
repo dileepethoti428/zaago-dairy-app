@@ -260,8 +260,14 @@ export default function Auth() {
             variant: 'destructive',
           });
         } else {
-          toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
-          navigate(from, { replace: true });
+          // Check whether this account requires an MFA step
+          const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
+            navigate('/auth/mfa', { replace: true });
+          } else {
+            toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
+            navigate(from, { replace: true });
+          }
         }
       } else {
         // Sign up
