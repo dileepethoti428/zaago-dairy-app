@@ -2,6 +2,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import ApplicationPending from '@/pages/ApplicationPending';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -11,8 +13,43 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, loading, userRole, applicationStatus, applicationRejectionReason, accountDeactivated } = useAuth();
   const location = useLocation();
+  const [aalChecked, setAalChecked] = useState(false);
+  const [needsMfa, setNeedsMfa] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    let cancelled = false;
+    if (!user) {
+      setAalChecked(true);
+      setNeedsMfa(false);
+      return;
+    }
+    setAalChecked(false);
+    (async () => {
+      try {
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (cancelled) return;
+        setNeedsMfa(data?.currentLevel === 'aal1' && data?.nextLevel === 'aal2');
+      } catch {
+        if (!cancelled) setNeedsMfa(false);
+      } finally {
+        if (!cancelled) setAalChecked(true);
+      }
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange(async () => {
+      try {
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (cancelled) return;
+        setNeedsMfa(data?.currentLevel === 'aal1' && data?.nextLevel === 'aal2');
+      } catch { /* noop */ }
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, [user]);
+
+  if (loading || (user && !aalChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -22,6 +59,10 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   if (!user) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
+  if (needsMfa && location.pathname !== '/auth/mfa') {
+    return <Navigate to="/auth/mfa" replace />;
   }
 
   // Block deactivated accounts (non-admin only)
