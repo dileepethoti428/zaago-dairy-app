@@ -1,23 +1,9 @@
-## Sign-Out Confirmation Dialog
+Fix the sign-out behavior so the user is never signed out immediately after clicking “Sign Out”.
 
-Add a confirmation dialog that appears when the user taps **Sign Out** from the profile dropdown in the app header, preventing accidental logouts.
-
-### Scope
-- **File**: `src/components/layout/AppHeader.tsx`
-- **Component**: Reuse existing `AlertDialog` from `src/components/ui/alert-dialog.tsx`
-
-### Implementation
-1. Import `AlertDialog` primitives in `AppHeader.tsx`.
-2. Add `signOutOpen` state to control dialog visibility.
-3. Replace the direct `onClick={handleSignOut}` on the Sign Out menu item with `onClick={() => setSignOutOpen(true)}`.
-4. Render an `<AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>` with:
-   - Title: "Sign Out"
-   - Description: "Are you sure you want to sign out?"
-   - Cancel button (closes dialog)
-   - Confirm button (destructive variant, calls existing `handleSignOut`)
-5. Ensure the dropdown menu stays open/closed correctly — the dialog overlay will handle focus.
-
-### No changes to
-- Auth logic (`AuthContext`, `signOut` method)
-- Routing or navigation
-- Any other pages or components
+Plan:
+1. Update the Settings page sign-out button to open a confirmation dialog instead of calling `signOut()` directly.
+2. Reuse the same confirmation pattern already present in the header: title, message, Cancel, and confirmed Sign Out action.
+3. Keep the actual sign-out only inside the confirmation action, then navigate to `/auth` after successful sign-out.
+4. Verify both sign-out entry points:
+   - Header profile menu → Sign Out shows confirmation first.
+   - Settings page bottom Sign Out button shows confirmation first.
