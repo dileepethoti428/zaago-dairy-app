@@ -31,6 +31,8 @@ import PartnerApprovals from "./pages/PartnerApprovals";
 import SettlementList from "./pages/SettlementList";
 import SettlementDetail from "./pages/SettlementDetail";
 import ResetPassword from "./pages/ResetPassword";
+import Security from "./pages/Security";
+import MfaChallenge from "./pages/MfaChallenge";
 
 const queryClient = new QueryClient();
 
