@@ -37,8 +37,10 @@ export function AppHeader() {
   const { user, signOut, isAdmin } = useAuth();
   const { selectedCenter, setSelectedCenter, centers, isLoading: centersLoading, canSwitchCenters } = useCenter();
   const navigate = useNavigate();
+  const [signOutOpen, setSignOutOpen] = useState(false);
 
   const handleSignOut = async () => {
+    setSignOutOpen(false);
     await signOut();
     navigate('/auth');
   };
