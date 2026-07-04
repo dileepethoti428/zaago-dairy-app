@@ -9,6 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   Settings as SettingsIcon, 
   User, 
@@ -215,8 +225,10 @@ export default function Settings() {
   // Local state for settings that don't persist to DB
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [signOutOpen, setSignOutOpen] = useState(false);
 
   const handleSignOut = async () => {
+    setSignOutOpen(false);
     await signOut();
     navigate('/auth');
   };
@@ -565,11 +577,31 @@ export default function Settings() {
         <Button
           variant="outline"
           className="h-12 w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-          onClick={handleSignOut}
+          onClick={() => setSignOutOpen(true)}
         >
           <LogOut className="mr-2 h-5 w-5" />
           Sign Out
         </Button>
+
+        <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sign Out</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to sign out?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleSignOut}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Sign Out
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
