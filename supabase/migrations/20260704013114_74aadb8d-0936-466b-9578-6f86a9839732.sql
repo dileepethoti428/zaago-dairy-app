@@ -1,0 +1,3 @@
+ALTER TABLE public.mfa_verification_attempts DROP CONSTRAINT IF EXISTS mfa_verification_attempts_context_check;
+DELETE FROM public.mfa_verification_attempts WHERE context NOT IN ('totp_login','totp_enroll','totp_disable','recovery_login','recovery_regenerate');
+ALTER TABLE public.mfa_verification_attempts ADD CONSTRAINT mfa_verification_attempts_context_check CHECK (context IN ('totp_login','totp_enroll','totp_disable','recovery_login','recovery_regenerate'));
