@@ -9,6 +9,7 @@ import {
   useApprovedPartnerRoles,
   usePromoteToAdmin,
   useDemoteFromAdmin,
+  useDeleteApplication,
 } from '@/hooks/usePartnerApplications';
 import { useAllCollectionCenters } from '@/hooks/useCollectionCenters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
