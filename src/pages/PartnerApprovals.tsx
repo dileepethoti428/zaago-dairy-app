@@ -376,6 +376,8 @@ export default function PartnerApprovals() {
   const activateAccount = useActivateAccount();
   const promoteToAdmin = usePromoteToAdmin();
   const demoteFromAdmin = useDemoteFromAdmin();
+  const deleteApplication = useDeleteApplication();
+  const [deleteDialogApp, setDeleteDialogApp] = useState<PartnerApplication | null>(null);
   const { data: adminUserIds } = useApprovedPartnerRoles();
   const { data: centers } = useAllCollectionCenters();
   const { toast } = useToast();
