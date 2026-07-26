@@ -323,9 +323,11 @@ function ApplicationList({
     );
   }
 
+  const remaining = applications.length - visibleCount;
+
   return (
     <div className="space-y-3">
-      {applications.map((app) => (
+      {applications.slice(0, visibleCount).map((app) => (
         <ApplicationCard
           key={app.id}
           application={app}
@@ -337,8 +339,30 @@ function ApplicationList({
           onAssignCenter={onAssignCenter ? () => onAssignCenter(app) : undefined}
           onPromote={onPromote ? () => onPromote(app) : undefined}
           onDemote={onDemote ? () => onDemote(app) : undefined}
+          onDelete={onDelete ? () => onDelete(app) : undefined}
         />
       ))}
+
+      {remaining > 0 && (
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+        >
+          <ChevronDown className="mr-1.5 h-4 w-4" />
+          View more ({remaining} remaining)
+        </Button>
+      )}
+
+      {visibleCount > PAGE_SIZE && (
+        <Button
+          variant="ghost"
+          className="w-full text-muted-foreground"
+          onClick={() => setVisibleCount(PAGE_SIZE)}
+        >
+          Show less
+        </Button>
+      )}
     </div>
   );
 }
