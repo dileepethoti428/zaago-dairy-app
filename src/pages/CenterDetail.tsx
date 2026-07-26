@@ -266,6 +266,39 @@ export default function CenterDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {center.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes the center along with its staff assignments and pricing setup.
+              This cannot be undone. If the center has milk entries, farmers or settlements, deletion
+              is blocked — deactivate it instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteCenter.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteCenter.mutate(center.id, {
+                  onSuccess: () => {
+                    setDeleteDialog(false);
+                    navigate('/centers');
+                  },
+                  onError: () => setDeleteDialog(false),
+                });
+              }}
+            >
+              {deleteCenter.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
