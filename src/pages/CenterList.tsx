@@ -33,7 +33,8 @@ export default function CenterList() {
   const { isAdmin } = useAuth();
   const { data: centers, isLoading } = useAllCollectionCenters();
   const toggleStatus = useToggleCenterStatus();
-  
+  const deleteCenter = useDeleteCollectionCenter();
+
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     centerId: string;
@@ -45,6 +46,12 @@ export default function CenterList() {
     centerName: '',
     action: 'deactivate',
   });
+
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    centerId: string;
+    centerName: string;
+  }>({ open: false, centerId: '', centerName: '' });
 
   // Redirect non-admin users
   if (!isAdmin) {
