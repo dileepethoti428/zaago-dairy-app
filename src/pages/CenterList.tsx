@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useAllCollectionCenters, useToggleCenterStatus } from '@/hooks/useCollectionCenters';
+import { useAllCollectionCenters, useToggleCenterStatus, useDeleteCollectionCenter } from '@/hooks/useCollectionCenters';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Building2,
@@ -24,6 +24,7 @@ import {
   Phone,
   ChevronRight,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
