@@ -111,6 +111,78 @@ export function useUpdateCollectionCenter() {
   });
 }
 
+// Count linked records that block deletion
+async function getCenterUsage(centerId: string) {
+  const [entries, farmers, settlements] = await Promise.all([
+    supabase.from('milk_entries').select('id', { count: 'exact', head: true }).eq('center_id', centerId),
+    supabase.from('farmers').select('id', { count: 'exact', head: true }).eq('center_id', centerId),
+    supabase.from('settlements').select('id', { count: 'exact', head: true }).eq('center_id', centerId),
+  ]);
+
+  return {
+    milkEntries: entries.count ?? 0,
+    farmers: farmers.count ?? 0,
+    settlements: settlements.count ?? 0,
+    get total() {
+      return (entries.count ?? 0) + (farmers.count ?? 0) + (settlements.count ?? 0);
+    },
+  };
+}
+
+export function useCenterUsage(centerId?: string) {
+  return useQuery({
+    queryKey: ['center-usage', centerId],
+    queryFn: () => getCenterUsage(centerId!),
+    enabled: !!centerId,
+  });
+}
+
+// Delete a collection center (only when unused)
+export function useDeleteCollectionCenter() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const usage = await getCenterUsage(id);
+      if (usage.total > 0) {
+        const parts = [
+          usage.milkEntries ? `${usage.milkEntries} milk entries` : null,
+          usage.farmers ? `${usage.farmers} farmers` : null,
+          usage.settlements ? `${usage.settlements} settlements` : null,
+        ].filter(Boolean);
+        throw new Error(
+          `This center still has ${parts.join(', ')}. Deactivate it instead to preserve historical data.`
+        );
+      }
+
+      // Clean up non-historical links
+      await supabase.from('user_center_assignments').delete().eq('center_id', id);
+      await supabase.from('pricing_settings').delete().eq('collection_center_id', id);
+      await supabase.from('pricing_formula').delete().eq('collection_center_id', id);
+
+      const { error } = await supabase.from('collection_centers').delete().eq('id', id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-collection-centers'] });
+      queryClient.invalidateQueries({ queryKey: ['collection-centers'] });
+      toast({
+        title: 'Center Deleted',
+        description: 'The collection center has been permanently deleted.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Cannot Delete Center',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
 // Toggle center active status
 export function useToggleCenterStatus() {
   const queryClient = useQueryClient();
