@@ -641,6 +641,34 @@ export default function PartnerApprovals() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Partner AlertDialog */}
+      <AlertDialog open={!!deleteDialogApp} onOpenChange={(open) => { if (!open) setDeleteDialogApp(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteDialogApp?.full_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes their application, roles and center access. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!deleteDialogApp) return;
+                deleteApplication.mutate(
+                  { applicationId: deleteDialogApp.id, userId: deleteDialogApp.user_id },
+                  { onSuccess: () => setDeleteDialogApp(null) }
+                );
+              }}
+              disabled={deleteApplication.isPending}
+            >
+              {deleteApplication.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
