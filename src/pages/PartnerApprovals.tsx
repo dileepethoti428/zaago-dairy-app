@@ -501,6 +501,7 @@ export default function PartnerApprovals() {
               status="pending"
               onApprove={handleApproveClick}
               onReject={handleRejectClick}
+              onDelete={(app) => setDeleteDialogApp(app)}
             />
           </TabsContent>
 
@@ -513,11 +514,12 @@ export default function PartnerApprovals() {
               onAssignCenter={handleAssignCenterClick}
               onPromote={(app) => setPromoteDialogApp(app)}
               onDemote={(app) => setDemoteDialogApp(app)}
+              onDelete={(app) => setDeleteDialogApp(app)}
             />
           </TabsContent>
 
           <TabsContent value="rejected" className="mt-4">
-            <ApplicationList status="rejected" />
+            <ApplicationList status="rejected" onDelete={(app) => setDeleteDialogApp(app)} />
           </TabsContent>
         </Tabs>
       </div>
