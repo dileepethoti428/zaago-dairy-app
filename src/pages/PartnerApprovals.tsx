@@ -64,6 +64,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PartnerApplication } from '@/hooks/usePartnerApplications';
 
+const PAGE_SIZE = 5;
+
 function StatusBadge({ status }: { status: PartnerApplication['status'] }) {
   if (status === 'pending') {
     return (
