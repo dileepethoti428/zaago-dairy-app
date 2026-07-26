@@ -2447,6 +2447,30 @@ export type Database = {
           },
         ]
       }
+      delivery_otp_attempts: {
+        Row: {
+          attempted_at: string
+          id: string
+          order_id: string | null
+          success: boolean
+          user_id: string
+        }
+        Insert: {
+          attempted_at?: string
+          id?: string
+          order_id?: string | null
+          success: boolean
+          user_id: string
+        }
+        Update: {
+          attempted_at?: string
+          id?: string
+          order_id?: string | null
+          success?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       delivery_routes: {
         Row: {
           agent_id: string
@@ -5293,6 +5317,7 @@ export type Database = {
           images: string[] | null
           ingredients: string[] | null
           is_active: boolean
+          is_subscribable: boolean
           low_stock_notified: boolean | null
           name: string
           nutritional_info: Json | null
@@ -5325,6 +5350,7 @@ export type Database = {
           images?: string[] | null
           ingredients?: string[] | null
           is_active?: boolean
+          is_subscribable?: boolean
           low_stock_notified?: boolean | null
           name: string
           nutritional_info?: Json | null
@@ -5357,6 +5383,7 @@ export type Database = {
           images?: string[] | null
           ingredients?: string[] | null
           is_active?: boolean
+          is_subscribable?: boolean
           low_stock_notified?: boolean | null
           name?: string
           nutritional_info?: Json | null
@@ -5410,6 +5437,8 @@ export type Database = {
           date_of_birth: string | null
           default_address: Json | null
           deleted_at: string | null
+          delivery_otp: string | null
+          delivery_otp_updated_at: string | null
           device_info: Json | null
           documents_submitted: boolean | null
           documents_verified: boolean | null
@@ -5444,6 +5473,8 @@ export type Database = {
           date_of_birth?: string | null
           default_address?: Json | null
           deleted_at?: string | null
+          delivery_otp?: string | null
+          delivery_otp_updated_at?: string | null
           device_info?: Json | null
           documents_submitted?: boolean | null
           documents_verified?: boolean | null
@@ -5478,6 +5509,8 @@ export type Database = {
           date_of_birth?: string | null
           default_address?: Json | null
           deleted_at?: string | null
+          delivery_otp?: string | null
+          delivery_otp_updated_at?: string | null
           device_info?: Json | null
           documents_submitted?: boolean | null
           documents_verified?: boolean | null
@@ -6759,6 +6792,7 @@ export type Database = {
           delivery_fee_per_delivery: number
           discount_1month: number | null
           discount_1week: number | null
+          discount_3months: number | null
           discount_6months: number | null
           discount_percentage: number
           id: string
@@ -6776,6 +6810,7 @@ export type Database = {
           delivery_fee_per_delivery?: number
           discount_1month?: number | null
           discount_1week?: number | null
+          discount_3months?: number | null
           discount_6months?: number | null
           discount_percentage?: number
           id?: string
@@ -6793,6 +6828,7 @@ export type Database = {
           delivery_fee_per_delivery?: number
           discount_1month?: number | null
           discount_1week?: number | null
+          discount_3months?: number | null
           discount_6months?: number | null
           discount_percentage?: number
           id?: string
@@ -9137,6 +9173,7 @@ export type Database = {
         }
         Returns: Json
       }
+      generate_customer_delivery_otp: { Args: never; Returns: string }
       generate_daily_orders: { Args: never; Returns: undefined }
       generate_order_qr_code: {
         Args: { order_uuid: string }
@@ -9880,6 +9917,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivery_date: string
+          delivery_time: string
+          delivery_time_slot: string
           order_id: string
           order_status: string
           payment_status: string
@@ -10355,6 +10394,7 @@ export type Database = {
           product_name: string
         }[]
       }
+      regenerate_delivery_otp: { Args: never; Returns: Json }
       reject_delivery_agent: {
         Args: { p_admin_user_id: string; p_agent_id: string; p_reason?: string }
         Returns: Json
@@ -11072,6 +11112,16 @@ export type Database = {
         Returns: Json
       }
       unlockrows: { Args: { "": string }; Returns: number }
+      update_agent_location: {
+        Args: {
+          p_accuracy?: number
+          p_heading?: number
+          p_latitude: number
+          p_longitude: number
+          p_speed?: number
+        }
+        Returns: Json
+      }
       update_order_status: {
         Args: {
           p_agent_id: string
@@ -11168,6 +11218,10 @@ export type Database = {
           p_document_type: string
           p_verified_by: string
         }
+        Returns: Json
+      }
+      verify_delivery_otp: {
+        Args: { p_agent_id?: string; p_order_id: string; p_otp: string }
         Returns: Json
       }
       verify_order_otp: {
