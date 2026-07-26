@@ -228,6 +228,34 @@ export function useActivateAccount() {
   });
 }
 
+// Delete a partner application and revoke all access (admin only)
+export function useDeleteApplication() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ applicationId, userId }: { applicationId: string; userId: string }) => {
+      await supabase.from('user_center_assignments').delete().eq('user_id', userId);
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+
+      const { error } = await supabase
+        .from('dairy_partner_applications')
+        .delete()
+        .eq('id', applicationId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['partner-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['partner-roles'] });
+      toast({ title: 'Partner deleted', description: 'The application and access have been removed.' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
 // Fetch all user_ids that currently have the 'admin' role
 export function useApprovedPartnerRoles() {
   return useQuery({
