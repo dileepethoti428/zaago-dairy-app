@@ -97,6 +97,7 @@ function ApplicationCard({
   onAssignCenter,
   onPromote,
   onDemote,
+  onDelete,
 }: {
   application: PartnerApplication;
   isAdmin?: boolean;
@@ -107,6 +108,7 @@ function ApplicationCard({
   onAssignCenter?: () => void;
   onPromote?: () => void;
   onDemote?: () => void;
+  onDelete?: () => void;
 }) {
   return (
     <Card className="shadow-sm">
