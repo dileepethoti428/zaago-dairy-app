@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useCollectionCenter, useToggleCenterStatus } from '@/hooks/useCollectionCenters';
+import { useCollectionCenter, useToggleCenterStatus, useDeleteCollectionCenter } from '@/hooks/useCollectionCenters';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Building2,
@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Power,
   PowerOff,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -35,8 +36,10 @@ export default function CenterDetail() {
   const { isAdmin } = useAuth();
   const { data: center, isLoading, error } = useCollectionCenter(id || '');
   const toggleStatus = useToggleCenterStatus();
-  
+  const deleteCenter = useDeleteCollectionCenter();
+
   const [confirmDialog, setConfirmDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   // Redirect non-admin users
   if (!isAdmin) {
@@ -218,9 +221,19 @@ export default function CenterDetail() {
                 </>
               )}
             </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleteDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Center
+            </Button>
           </CardContent>
         </Card>
       </div>
+
 
       {/* Confirmation Dialog */}
       <AlertDialog open={confirmDialog} onOpenChange={setConfirmDialog}>
@@ -249,6 +262,39 @@ export default function CenterDetail() {
               className={center.is_active ? 'bg-destructive hover:bg-destructive/90' : ''}
             >
               {center.is_active ? 'Deactivate' : 'Activate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialog} onOpenChange={setDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {center.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes the center along with its staff assignments and pricing setup.
+              This cannot be undone. If the center has milk entries, farmers or settlements, deletion
+              is blocked — deactivate it instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteCenter.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteCenter.mutate(center.id, {
+                  onSuccess: () => {
+                    setDeleteDialog(false);
+                    navigate('/centers');
+                  },
+                  onError: () => setDeleteDialog(false),
+                });
+              }}
+            >
+              {deleteCenter.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

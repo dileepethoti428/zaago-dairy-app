@@ -1,19 +1,25 @@
-# Partner Approvals: Delete Partner + "View More" Pagination
+## Goal
+Allow admins to delete a collection center from the Collection Centers page (and its detail page), with protection against destroying linked data.
 
-## 1. Delete partner option
+## Safety rules
+The database has no foreign keys onto `collection_centers`, but several tables store a `center_id`: `milk_entries`, `farmers`, `settlements`, `user_center_assignments`, `collection_partner_bank_details`, plus `collection_center_id` on `pricing_settings` / `pricing_formula`. Deleting blindly would orphan those rows.
 
-Currently the `dairy_partner_applications` table has policies for viewing, inserting and updating only — there is **no delete policy**, so a delete from the app would silently fail. A migration is required.
+So deletion is blocked when the center has any linked milk entries, farmers, or settlements. In that case the UI tells the admin to deactivate instead. If only assignments/pricing rows exist, those are cleaned up as part of the delete.
 
-- **Migration**: add a policy allowing admins to delete partner applications (`has_role(auth.uid(), 'admin')`).
-- **Hook** (`src/hooks/usePartnerApplications.ts`): add `useDeleteApplication` that deletes the application row by id, and also removes the partner's rows in `user_roles` and `user_center_assignments` so a deleted partner loses all access. Invalidate `partner-applications` and `partner-roles` on success.
-- **UI** (`src/pages/PartnerApprovals.tsx`): add a red **Delete Partner** button (trash icon) on every card in all three tabs, opening a confirmation dialog: "Delete <name>? This permanently removes their application and access. This cannot be undone." with Cancel / Delete.
+## Changes
 
-Note: this deletes the application record and access, not the underlying auth account (that requires an admin server function). If you also want the login account fully removed, say so and I'll add an edge function for it.
+**`src/hooks/useCollectionCenters.ts`**
+- Add `useCenterUsage(centerId)` — counts milk entries, farmers, and settlements for a center.
+- Add `useDeleteCollectionCenter()` — re-checks counts before deleting; throws a clear message if in use. Otherwise removes `user_center_assignments`, `pricing_settings`, `pricing_formula` rows for the center, then deletes the center. Invalidates center queries and shows a toast.
 
-## 2. "View more" after 5 partners
+**`src/pages/CenterList.tsx`**
+- Add a delete (trash) action on each center row, for both active and inactive lists.
+- Confirmation dialog naming the center, with a typed-safe destructive confirm and an explanation that this cannot be undone.
+- If the center is in use, the dialog explains it can't be deleted and offers Deactivate instead.
 
-In `ApplicationList`, keep a local `visibleCount` state starting at 5. Render only the first `visibleCount` applications; when more exist, show a **View more (N remaining)** button below the list that adds 5 more each tap (plus a **Show less** link once expanded). Applies independently to Pending, Approved and Rejected tabs.
+**`src/pages/CenterDetail.tsx`**
+- Add a "Delete Center" destructive button in the Actions card, using the same confirmation flow, navigating back to `/centers` on success.
 
-## Technical details
-- Files changed: `src/hooks/usePartnerApplications.ts`, `src/pages/PartnerApprovals.tsx`, plus one SQL migration for the delete policy.
-- Uses existing shadcn `AlertDialog` and `Button` components; no new dependencies.
+## Technical notes
+- Existing RLS: only admins can manage centers (`Admins can manage centers`, ALL) so deletes are already restricted server-side; both pages also already gate on `isAdmin`.
+- No database migration required.

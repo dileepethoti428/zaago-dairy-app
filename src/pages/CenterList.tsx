@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useAllCollectionCenters, useToggleCenterStatus } from '@/hooks/useCollectionCenters';
+import { useAllCollectionCenters, useToggleCenterStatus, useDeleteCollectionCenter } from '@/hooks/useCollectionCenters';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Building2,
@@ -24,6 +24,7 @@ import {
   Phone,
   ChevronRight,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +33,8 @@ export default function CenterList() {
   const { isAdmin } = useAuth();
   const { data: centers, isLoading } = useAllCollectionCenters();
   const toggleStatus = useToggleCenterStatus();
-  
+  const deleteCenter = useDeleteCollectionCenter();
+
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     centerId: string;
@@ -44,6 +46,12 @@ export default function CenterList() {
     centerName: '',
     action: 'deactivate',
   });
+
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    centerId: string;
+    centerName: string;
+  }>({ open: false, centerId: '', centerName: '' });
 
   // Redirect non-admin users
   if (!isAdmin) {
@@ -164,7 +172,18 @@ export default function CenterList() {
                           </div>
                         </div>
                       </button>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Delete ${center.name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteDialog({ open: true, centerId: center.id, centerName: center.name })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     </div>
                   ))}
                 </CardContent>
@@ -203,13 +222,24 @@ export default function CenterList() {
                           </div>
                         </div>
                       </button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleStatus(center.id, center.name, false)}
-                      >
-                        Activate
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(center.id, center.name, false)}
+                        >
+                          Activate
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Delete ${center.name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteDialog({ open: true, centerId: center.id, centerName: center.name })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </CardContent>
@@ -247,6 +277,36 @@ export default function CenterList() {
               className={confirmDialog.action === 'deactivate' ? 'bg-destructive hover:bg-destructive/90' : ''}
             >
               {confirmDialog.action === 'deactivate' ? 'Deactivate' : 'Activate'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteDialog.centerName}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes the center along with its staff assignments and pricing setup.
+              This cannot be undone. If the center has milk entries, farmers or settlements, deletion
+              is blocked — deactivate it instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteCenter.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteCenter.mutate(deleteDialog.centerId, {
+                  onSuccess: () => setDeleteDialog({ open: false, centerId: '', centerName: '' }),
+                  onError: () => setDeleteDialog({ open: false, centerId: '', centerName: '' }),
+                });
+              }}
+            >
+              {deleteCenter.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
