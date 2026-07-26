@@ -246,6 +246,20 @@ function ApplicationCard({
             )}
           </div>
         )}
+
+        {onDelete && (
+          <div className="pt-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Delete Partner
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
