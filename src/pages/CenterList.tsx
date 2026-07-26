@@ -172,7 +172,18 @@ export default function CenterList() {
                           </div>
                         </div>
                       </button>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Delete ${center.name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteDialog({ open: true, centerId: center.id, centerName: center.name })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      </div>
                     </div>
                   ))}
                 </CardContent>
