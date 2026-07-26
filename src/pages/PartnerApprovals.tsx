@@ -9,6 +9,7 @@ import {
   useApprovedPartnerRoles,
   usePromoteToAdmin,
   useDemoteFromAdmin,
+  useDeleteApplication,
 } from '@/hooks/usePartnerApplications';
 import { useAllCollectionCenters } from '@/hooks/useCollectionCenters';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -55,12 +56,16 @@ import {
   ShieldCheck,
   ShieldAlert,
   Building2,
+  Trash2,
+  ChevronDown,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PartnerApplication } from '@/hooks/usePartnerApplications';
+
+const PAGE_SIZE = 5;
 
 function StatusBadge({ status }: { status: PartnerApplication['status'] }) {
   if (status === 'pending') {
@@ -97,6 +102,7 @@ function ApplicationCard({
   onAssignCenter,
   onPromote,
   onDemote,
+  onDelete,
 }: {
   application: PartnerApplication;
   isAdmin?: boolean;
@@ -107,6 +113,7 @@ function ApplicationCard({
   onAssignCenter?: () => void;
   onPromote?: () => void;
   onDemote?: () => void;
+  onDelete?: () => void;
 }) {
   return (
     <Card className="shadow-sm">
@@ -244,6 +251,20 @@ function ApplicationCard({
             )}
           </div>
         )}
+
+        {onDelete && (
+          <div className="pt-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+              onClick={onDelete}
+            >
+              <Trash2 className="mr-1.5 h-4 w-4" />
+              Delete Partner
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -259,6 +280,7 @@ function ApplicationList({
   onAssignCenter,
   onPromote,
   onDemote,
+  onDelete,
 }: {
   status: 'pending' | 'approved' | 'rejected';
   adminUserIds?: Set<string>;
@@ -269,8 +291,10 @@ function ApplicationList({
   onAssignCenter?: (app: PartnerApplication) => void;
   onPromote?: (app: PartnerApplication) => void;
   onDemote?: (app: PartnerApplication) => void;
+  onDelete?: (app: PartnerApplication) => void;
 }) {
   const { data: applications, isLoading } = useAllApplications(status);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   if (isLoading) {
     return (
@@ -302,9 +326,11 @@ function ApplicationList({
     );
   }
 
+  const remaining = applications.length - visibleCount;
+
   return (
     <div className="space-y-3">
-      {applications.map((app) => (
+      {applications.slice(0, visibleCount).map((app) => (
         <ApplicationCard
           key={app.id}
           application={app}
@@ -316,8 +342,30 @@ function ApplicationList({
           onAssignCenter={onAssignCenter ? () => onAssignCenter(app) : undefined}
           onPromote={onPromote ? () => onPromote(app) : undefined}
           onDemote={onDemote ? () => onDemote(app) : undefined}
+          onDelete={onDelete ? () => onDelete(app) : undefined}
         />
       ))}
+
+      {remaining > 0 && (
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+        >
+          <ChevronDown className="mr-1.5 h-4 w-4" />
+          View more ({remaining} remaining)
+        </Button>
+      )}
+
+      {visibleCount > PAGE_SIZE && (
+        <Button
+          variant="ghost"
+          className="w-full text-muted-foreground"
+          onClick={() => setVisibleCount(PAGE_SIZE)}
+        >
+          Show less
+        </Button>
+      )}
     </div>
   );
 }
@@ -329,6 +377,8 @@ export default function PartnerApprovals() {
   const activateAccount = useActivateAccount();
   const promoteToAdmin = usePromoteToAdmin();
   const demoteFromAdmin = useDemoteFromAdmin();
+  const deleteApplication = useDeleteApplication();
+  const [deleteDialogApp, setDeleteDialogApp] = useState<PartnerApplication | null>(null);
   const { data: adminUserIds } = useApprovedPartnerRoles();
   const { data: centers } = useAllCollectionCenters();
   const { toast } = useToast();
@@ -454,6 +504,7 @@ export default function PartnerApprovals() {
               status="pending"
               onApprove={handleApproveClick}
               onReject={handleRejectClick}
+              onDelete={(app) => setDeleteDialogApp(app)}
             />
           </TabsContent>
 
@@ -466,11 +517,12 @@ export default function PartnerApprovals() {
               onAssignCenter={handleAssignCenterClick}
               onPromote={(app) => setPromoteDialogApp(app)}
               onDemote={(app) => setDemoteDialogApp(app)}
+              onDelete={(app) => setDeleteDialogApp(app)}
             />
           </TabsContent>
 
           <TabsContent value="rejected" className="mt-4">
-            <ApplicationList status="rejected" />
+            <ApplicationList status="rejected" onDelete={(app) => setDeleteDialogApp(app)} />
           </TabsContent>
         </Tabs>
       </div>
@@ -585,6 +637,34 @@ export default function PartnerApprovals() {
               disabled={demoteFromAdmin.isPending}
             >
               {demoteFromAdmin.isPending ? 'Removing...' : 'Remove Admin'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Partner AlertDialog */}
+      <AlertDialog open={!!deleteDialogApp} onOpenChange={(open) => { if (!open) setDeleteDialogApp(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {deleteDialogApp?.full_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes their application, roles and center access. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!deleteDialogApp) return;
+                deleteApplication.mutate(
+                  { applicationId: deleteDialogApp.id, userId: deleteDialogApp.user_id },
+                  { onSuccess: () => setDeleteDialogApp(null) }
+                );
+              }}
+              disabled={deleteApplication.isPending}
+            >
+              {deleteApplication.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
