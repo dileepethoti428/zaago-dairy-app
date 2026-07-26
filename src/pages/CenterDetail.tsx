@@ -15,7 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useCollectionCenter, useToggleCenterStatus } from '@/hooks/useCollectionCenters';
+import { useCollectionCenter, useToggleCenterStatus, useDeleteCollectionCenter } from '@/hooks/useCollectionCenters';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   Building2,
@@ -26,6 +26,7 @@ import {
   AlertCircle,
   Power,
   PowerOff,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
