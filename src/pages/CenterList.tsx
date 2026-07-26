@@ -211,13 +211,24 @@ export default function CenterList() {
                           </div>
                         </div>
                       </button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleStatus(center.id, center.name, false)}
-                      >
-                        Activate
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(center.id, center.name, false)}
+                        >
+                          Activate
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Delete ${center.name}`}
+                          className="text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteDialog({ open: true, centerId: center.id, centerName: center.name })}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </CardContent>
