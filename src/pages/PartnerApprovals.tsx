@@ -277,6 +277,7 @@ function ApplicationList({
   onAssignCenter,
   onPromote,
   onDemote,
+  onDelete,
 }: {
   status: 'pending' | 'approved' | 'rejected';
   adminUserIds?: Set<string>;
@@ -287,8 +288,10 @@ function ApplicationList({
   onAssignCenter?: (app: PartnerApplication) => void;
   onPromote?: (app: PartnerApplication) => void;
   onDemote?: (app: PartnerApplication) => void;
+  onDelete?: (app: PartnerApplication) => void;
 }) {
   const { data: applications, isLoading } = useAllApplications(status);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   if (isLoading) {
     return (
