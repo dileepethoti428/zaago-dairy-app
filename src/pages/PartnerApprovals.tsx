@@ -55,6 +55,8 @@ import {
   ShieldCheck,
   ShieldAlert,
   Building2,
+  Trash2,
+  ChevronDown,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
