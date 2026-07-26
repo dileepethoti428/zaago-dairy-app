@@ -36,8 +36,10 @@ export default function CenterDetail() {
   const { isAdmin } = useAuth();
   const { data: center, isLoading, error } = useCollectionCenter(id || '');
   const toggleStatus = useToggleCenterStatus();
-  
+  const deleteCenter = useDeleteCollectionCenter();
+
   const [confirmDialog, setConfirmDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   // Redirect non-admin users
   if (!isAdmin) {
@@ -219,9 +221,19 @@ export default function CenterDetail() {
                 </>
               )}
             </Button>
+
+            <Button
+              variant="outline"
+              className="w-full justify-start text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleteDialog(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Center
+            </Button>
           </CardContent>
         </Card>
       </div>
+
 
       {/* Confirmation Dialog */}
       <AlertDialog open={confirmDialog} onOpenChange={setConfirmDialog}>
