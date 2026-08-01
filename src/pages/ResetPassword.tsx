@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, Eye, EyeOff, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
+import { MfaVerifyStep } from '@/components/mfa/MfaVerifyStep';
 import zaagoLogo from '@/assets/zaago-logo.jpeg';
 
 export default function ResetPassword() {
@@ -19,9 +20,36 @@ export default function ResetPassword() {
   const [checking, setChecking] = useState(true);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
+  // MFA gate: Supabase requires an AAL2 session to change the password when 2FA is on
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  /** Determines whether this session still needs a TOTP step before updating the password. */
+  const checkMfaGate = useCallback(async () => {
+    try {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal?.nextLevel !== 'aal2' || aal?.currentLevel === 'aal2') {
+        setMfaRequired(false);
+        setMfaFactorId(null);
+        return;
+      }
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const verified = factors?.totp?.find((f) => f.status === 'verified');
+      if (!verified) {
+        setMfaRequired(false);
+        setMfaFactorId(null);
+        return;
+      }
+      setMfaFactorId(verified.id);
+      setMfaRequired(true);
+    } catch (err) {
+      console.error('MFA gate check failed:', err);
+      setMfaRequired(false);
+    }
+  }, []);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -29,6 +57,7 @@ export default function ResetPassword() {
       const hash = window.location.hash;
       if (hash.includes('type=recovery')) {
         setIsRecoverySession(true);
+        await checkMfaGate();
         setChecking(false);
         return;
       }
@@ -37,6 +66,7 @@ export default function ResetPassword() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsRecoverySession(true);
+        await checkMfaGate();
       }
       setChecking(false);
     };
@@ -45,14 +75,15 @@ export default function ResetPassword() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoverySession(true);
-        setChecking(false);
+        checkMfaGate().finally(() => setChecking(false));
       }
     });
 
     checkSession();
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [checkMfaGate]);
+
 
   const validate = () => {
     const newErrors: typeof errors = {};
@@ -146,6 +177,51 @@ export default function ResetPassword() {
       </div>
     );
   }
+
+  // 2FA gate: password change needs an AAL2 session when MFA is enabled
+  if (mfaRequired && mfaFactorId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+        <Card className="w-full max-w-md shadow-dairy">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Verify it's you</CardTitle>
+            <CardDescription>
+              Your account has two-factor authentication enabled. Enter your authenticator code to
+              continue setting a new password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <MfaVerifyStep
+              factorId={mfaFactorId}
+              context="totp_login"
+              onVerified={async () => {
+                await checkMfaGate();
+                toast({ title: 'Verified', description: 'You can now set a new password.' });
+              }}
+              onRecoveryUsed={async (message) => {
+                await checkMfaGate();
+                toast({ title: 'Recovery code accepted', description: message });
+              }}
+            />
+            <button
+              type="button"
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate('/auth', { replace: true });
+              }}
+            >
+              Cancel and go back to login
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
