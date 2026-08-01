@@ -178,6 +178,51 @@ export default function ResetPassword() {
     );
   }
 
+  // 2FA gate: password change needs an AAL2 session when MFA is enabled
+  if (mfaRequired && mfaFactorId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
+        <Card className="w-full max-w-md shadow-dairy">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Verify it's you</CardTitle>
+            <CardDescription>
+              Your account has two-factor authentication enabled. Enter your authenticator code to
+              continue setting a new password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <MfaVerifyStep
+              factorId={mfaFactorId}
+              context="totp_login"
+              onVerified={async () => {
+                await checkMfaGate();
+                toast({ title: 'Verified', description: 'You can now set a new password.' });
+              }}
+              onRecoveryUsed={async (message) => {
+                await checkMfaGate();
+                toast({ title: 'Recovery code accepted', description: message });
+              }}
+            />
+            <button
+              type="button"
+              className="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate('/auth', { replace: true });
+              }}
+            >
+              Cancel and go back to login
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
       <Card className="w-full max-w-md shadow-dairy">
