@@ -1,25 +1,28 @@
-## Goal
-Allow admins to delete a collection center from the Collection Centers page (and its detail page), with protection against destroying linked data.
+# Fix "AAL2 session is required" on Set New Password
 
-## Safety rules
-The database has no foreign keys onto `collection_centers`, but several tables store a `center_id`: `milk_entries`, `farmers`, `settlements`, `user_center_assignments`, `collection_partner_bank_details`, plus `collection_center_id` on `pricing_settings` / `pricing_formula`. Deleting blindly would orphan those rows.
+## What's happening
 
-So deletion is blocked when the center has any linked milk entries, farmers, or settlements. In that case the UI tells the admin to deactivate instead. If only assignments/pricing rows exist, those are cleaned up as part of the delete.
+The reset-password link signs you in with a basic (AAL1) recovery session. Because your account has two-factor authentication turned on, Supabase refuses to change the password until that session is also verified with your authenticator app (AAL2). The Set New Password screen has no 2FA step, so the update fails with "AAL2 session is required to update email or password when MFA is enabled."
 
-## Changes
+## The fix
 
-**`src/hooks/useCollectionCenters.ts`**
-- Add `useCenterUsage(centerId)` — counts milk entries, farmers, and settlements for a center.
-- Add `useDeleteCollectionCenter()` — re-checks counts before deleting; throws a clear message if in use. Otherwise removes `user_center_assignments`, `pricing_settings`, `pricing_formula` rows for the center, then deletes the center. Invalidates center queries and shows a toast.
+Add a 2FA verification step inside the reset flow, only for accounts that have 2FA enabled:
 
-**`src/pages/CenterList.tsx`**
-- Add a delete (trash) action on each center row, for both active and inactive lists.
-- Confirmation dialog naming the center, with a typed-safe destructive confirm and an explanation that this cannot be undone.
-- If the center is in use, the dialog explains it can't be deleted and offers Deactivate instead.
+1. When the reset page loads and the recovery session is valid, check the assurance level.
+2. If 2FA is enabled and the session is still AAL1, show a "Verify your authenticator" step first:
+   - 6-digit code from the authenticator app, or
+   - "Use a recovery code instead" fallback (same guard function already used at login).
+3. Once verified, the session becomes AAL2 and the New Password / Confirm Password form appears; the update then succeeds.
+4. Accounts without 2FA see the password form immediately, exactly as today.
+5. If verification fails or the user can't verify, show a clear message with an option to go back to login.
 
-**`src/pages/CenterDetail.tsx`**
-- Add a "Delete Center" destructive button in the Actions card, using the same confirmation flow, navigating back to `/centers` on success.
+Also: keep the existing rate limiting (5 attempts / 5 minute lockout) by routing these attempts through the same guard used on the login challenge screen, so this path can't be brute-forced.
 
 ## Technical notes
-- Existing RLS: only admins can manage centers (`Admins can manage centers`, ALL) so deletes are already restricted server-side; both pages also already gate on `isAdmin`.
-- No database migration required.
+
+- File: `src/pages/ResetPassword.tsx` — add an AAL gate using `supabase.auth.mfa.getAuthenticatorAssuranceLevel()` and `listFactors()` after the recovery session is detected.
+- Reuse the challenge/verify logic and recovery-code fallback from `src/pages/MfaChallenge.tsx`; extract the shared verification UI into a small component (e.g. `src/components/mfa/MfaVerifyStep.tsx`) so both screens use identical behavior instead of duplicating it.
+- Rate limiting/attempt logging stays on the existing `mfa-guard` edge function with context `totp_login` / `recovery_login`; no database or edge-function changes required.
+- After a successful password update, keep the current behavior: sign out and redirect to `/auth`.
+
+Note: the recovery-code path in `mfa-guard` currently removes the TOTP factor entirely (disabling 2FA) — if that fallback is used here, the user will be told 2FA is off and to re-enable it from Security settings.
