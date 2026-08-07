@@ -6,17 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
+import { Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import zaagoLogo from '@/assets/zaago-logo.jpeg';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
+import { Stepper } from '@/components/auth/Stepper';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
 const phoneSchema = z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit Indian mobile number');
 
+const STEP_LABELS = ['Your Details', 'Bank Details', 'Review & Submit'];
+
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
+  const [step, setStep] = useState(1);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   const [email, setEmail] = useState('');
@@ -48,6 +52,19 @@ export default function Auth() {
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
 
+  const resetSignUpForm = () => {
+    setStep(1);
+    setEmail('');
+    setPassword('');
+    setFullName('');
+    setContactNumber('');
+    setBankAccountHolderName('');
+    setBankAccountNumber('');
+    setBankIfsc('');
+    setBankName('');
+    setErrors({});
+  };
+
   // Redirect if already logged in
   if (user) {
     navigate(from, { replace: true });
@@ -76,14 +93,7 @@ export default function Auth() {
               onClick={() => {
                 setApplicationSubmitted(false);
                 setIsLogin(true);
-                setEmail('');
-                setPassword('');
-                setFullName('');
-                setContactNumber('');
-                setBankAccountHolderName('');
-                setBankAccountNumber('');
-                setBankIfsc('');
-                setBankName('');
+                resetSignUpForm();
               }}
             >
               Back to Login
@@ -206,8 +216,32 @@ export default function Auth() {
     );
   }
 
-  const validateForm = () => {
+  const validateLogin = () => {
     const newErrors: typeof errors = {};
+    try {
+      emailSchema.parse(email);
+    } catch (e) {
+      if (e instanceof z.ZodError) newErrors.email = e.errors[0].message;
+    }
+    try {
+      passwordSchema.parse(password);
+    } catch (e) {
+      if (e instanceof z.ZodError) newErrors.password = e.errors[0].message;
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep1 = () => {
+    const newErrors: typeof errors = {};
+
+    if (!fullName.trim()) newErrors.fullName = 'Please enter your full name';
+
+    try {
+      phoneSchema.parse(contactNumber.replace(/\s/g, ''));
+    } catch (e) {
+      if (e instanceof z.ZodError) newErrors.contactNumber = e.errors[0].message;
+    }
 
     try {
       emailSchema.parse(email);
@@ -221,94 +255,58 @@ export default function Auth() {
       if (e instanceof z.ZodError) newErrors.password = e.errors[0].message;
     }
 
-    if (!isLogin) {
-      if (!fullName.trim()) newErrors.fullName = 'Please enter your full name';
-
-      try {
-        phoneSchema.parse(contactNumber.replace(/\s/g, ''));
-      } catch (e) {
-        if (e instanceof z.ZodError) newErrors.contactNumber = e.errors[0].message;
-      }
-
-      // Bank details validation
-      if (!bankAccountHolderName.trim()) newErrors.bankAccountHolderName = 'Please enter account holder name';
-      if (!/^\d{9,18}$/.test(bankAccountNumber.trim())) newErrors.bankAccountNumber = 'Enter a valid account number (9–18 digits)';
-      if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankIfsc.trim().toUpperCase())) newErrors.bankIfsc = 'Enter a valid IFSC code (e.g. SBIN0001234)';
-      if (!bankName.trim()) newErrors.bankName = 'Please enter bank name';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateStep2 = () => {
+    const newErrors: typeof errors = {};
+    if (!bankAccountHolderName.trim()) newErrors.bankAccountHolderName = 'Please enter account holder name';
+    if (!/^\d{9,18}$/.test(bankAccountNumber.trim())) newErrors.bankAccountNumber = 'Enter a valid account number (9–18 digits)';
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankIfsc.trim().toUpperCase())) newErrors.bankIfsc = 'Enter a valid IFSC code (e.g. SBIN0001234)';
+    if (!bankName.trim()) newErrors.bankName = 'Please enter bank name';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    if (!validateForm()) return;
-
+  const submitApplication = async () => {
     setLoading(true);
-
     try {
-      if (isLogin) {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast({
-            title: 'Login failed',
-            description: error.message.includes('Invalid login credentials')
-              ? 'Invalid email or password. Please try again.'
-              : error.message,
-            variant: 'destructive',
-          });
-        } else {
-          // Check whether this account requires an MFA step
-          const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-          if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
-            navigate('/auth/mfa', { replace: true });
-          } else {
-            toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
-            navigate(from, { replace: true });
-          }
-        }
-      } else {
-        // Sign up
-        const { error } = await signUp(email, password, fullName);
-        if (error) {
-          toast({
-            title: error.message.includes('already registered') ? 'Account exists' : 'Sign up failed',
-            description: error.message.includes('already registered')
-              ? 'This email is already registered. Please log in instead.'
-              : error.message,
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        // Get the newly created user session
-        const { data: { user: newUser } } = await supabase.auth.getUser();
-
-        if (newUser) {
-          // Submit partner application
-          const { error: appError } = await supabase
-            .from('dairy_partner_applications')
-            .insert({
-              user_id: newUser.id,
-              full_name: fullName,
-              contact_number: contactNumber,
-              email: email,
-              status: 'pending',
-              bank_account_holder_name: bankAccountHolderName,
-              bank_account_number: bankAccountNumber,
-              bank_ifsc: bankIfsc.toUpperCase(),
-              bank_name: bankName,
-            });
-
-          if (appError) {
-            console.error('Error submitting application:', appError);
-          }
-        }
-
-        setApplicationSubmitted(true);
+      const { error } = await signUp(email, password, fullName);
+      if (error) {
+        toast({
+          title: error.message.includes('already registered') ? 'Account exists' : 'Sign up failed',
+          description: error.message.includes('already registered')
+            ? 'This email is already registered. Please log in instead.'
+            : error.message,
+          variant: 'destructive',
+        });
+        return;
       }
+
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+
+      if (newUser) {
+        const { error: appError } = await supabase
+          .from('dairy_partner_applications')
+          .insert({
+            user_id: newUser.id,
+            full_name: fullName,
+            contact_number: contactNumber,
+            email: email,
+            status: 'pending',
+            bank_account_holder_name: bankAccountHolderName,
+            bank_account_number: bankAccountNumber,
+            bank_ifsc: bankIfsc.toUpperCase(),
+            bank_name: bankName,
+          });
+
+        if (appError) {
+          console.error('Error submitting application:', appError);
+        }
+      }
+
+      setApplicationSubmitted(true);
     } catch (err) {
       toast({
         title: 'Error',
@@ -319,6 +317,62 @@ export default function Auth() {
       setLoading(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (isLogin) {
+      if (!validateLogin()) return;
+      setLoading(true);
+      try {
+        const { error } = await signIn(email, password);
+        if (error) {
+          toast({
+            title: 'Login failed',
+            description: error.message.includes('Invalid login credentials')
+              ? 'Invalid email or password. Please try again.'
+              : error.message,
+            variant: 'destructive',
+          });
+        } else {
+          const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+          if (aal?.currentLevel === 'aal1' && aal?.nextLevel === 'aal2') {
+            navigate('/auth/mfa', { replace: true });
+          } else {
+            toast({ title: 'Welcome back!', description: 'You have successfully logged in.' });
+            navigate(from, { replace: true });
+          }
+        }
+      } catch (err) {
+        toast({
+          title: 'Error',
+          description: 'An unexpected error occurred. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Sign-up multi-step flow
+    if (step === 1) {
+      if (validateStep1()) setStep(2);
+      return;
+    }
+    if (step === 2) {
+      if (validateStep2()) setStep(3);
+      return;
+    }
+    await submitApplication();
+  };
+
+  const SummaryRow = ({ label, value }: { label: string; value: string }) => (
+    <div className="flex items-start justify-between gap-4 py-2">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-right break-all">{value}</span>
+    </div>
+  );
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -335,8 +389,14 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {!isLogin && (
+            <div className="mb-6">
+              <Stepper current={step} total={3} labels={STEP_LABELS} />
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && step === 1 && (
               <>
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
@@ -370,14 +430,11 @@ export default function Auth() {
                     <p className="text-sm text-destructive">{errors.contactNumber}</p>
                   )}
                 </div>
+              </>
+            )}
 
-                {/* Bank Details */}
-                <div className="relative flex items-center gap-2 py-1">
-                  <div className="flex-1 border-t border-border" />
-                  <span className="text-xs text-muted-foreground font-medium px-1">Bank Details</span>
-                  <div className="flex-1 border-t border-border" />
-                </div>
-
+            {!isLogin && step === 2 && (
+              <>
                 <div className="space-y-2">
                   <Label htmlFor="bankAccountHolderName">Account Holder Name</Label>
                   <Input
@@ -447,74 +504,119 @@ export default function Auth() {
               </>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12"
-                disabled={loading}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pr-12"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
-              {isLogin && (
-                <div className="text-right">
-                  <button
-                    type="button"
-                    onClick={() => { setIsForgotPassword(true); setErrors({}); }}
-                    className="text-sm text-primary hover:underline"
-                    disabled={loading}
-                  >
-                    Forgot password?
-                  </button>
+            {!isLogin && step === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border p-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Your Details
+                  </p>
+                  <SummaryRow label="Full Name" value={fullName} />
+                  <SummaryRow label="Contact Number" value={contactNumber} />
+                  <SummaryRow label="Email" value={email} />
+                  <SummaryRow label="Password" value={'•'.repeat(Math.min(password.length, 12))} />
                 </div>
-              )}
-            </div>
 
-            <Button
-              type="submit"
-              className="h-12 w-full text-base font-medium"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  {isLogin ? 'Signing in...' : 'Submitting application...'}
-                </>
-              ) : (
-                <>{isLogin ? 'Sign In' : 'Submit Application'}</>
+                <div className="rounded-lg border border-border p-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Bank Details
+                  </p>
+                  <SummaryRow label="Account Holder" value={bankAccountHolderName} />
+                  <SummaryRow label="Account Number" value={bankAccountNumber} />
+                  <SummaryRow label="IFSC Code" value={bankIfsc.toUpperCase()} />
+                  <SummaryRow label="Bank Name" value={bankName} />
+                </div>
+              </div>
+            )}
+
+            {(isLogin || step === 1) && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12"
+                    disabled={loading}
+                  />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 pr-12"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password}</p>
+                  )}
+                  {isLogin && (
+                    <div className="text-right">
+                      <button
+                        type="button"
+                        onClick={() => { setIsForgotPassword(true); setErrors({}); }}
+                        className="text-sm text-primary hover:underline"
+                        disabled={loading}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div className="flex gap-3">
+              {!isLogin && step > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 flex-1 text-base font-medium"
+                  disabled={loading}
+                  onClick={() => { setErrors({}); setStep(step - 1); }}
+                >
+                  Back
+                </Button>
               )}
-            </Button>
+              <Button
+                type="submit"
+                className="h-12 flex-1 text-base font-medium"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    {isLogin ? 'Signing in...' : 'Submitting application...'}
+                  </>
+                ) : isLogin ? (
+                  'Sign In'
+                ) : step === 3 ? (
+                  'Submit Application'
+                ) : (
+                  'Next'
+                )}
+              </Button>
+            </div>
           </form>
 
           <div className="mt-6 text-center">
@@ -522,7 +624,7 @@ export default function Auth() {
               type="button"
               onClick={() => {
                 setIsLogin(!isLogin);
-                setErrors({});
+                resetSignUpForm();
               }}
               className="text-sm text-primary hover:underline"
               disabled={loading}
