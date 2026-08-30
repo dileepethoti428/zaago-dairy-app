@@ -162,6 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error fetching application status:', error);
+        // Fail closed instead of preserving a stale approved/active state.
+        setApplicationStatus(null);
+        setApplicationRejectionReason(null);
+        setAccountDeactivated(false);
         return;
       }
 
@@ -208,7 +212,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    // Current-device sign-out does not depend on a remote logout request, so a
+    // network problem cannot leave this browser authenticated in the UI.
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
     if (error) return { error: error as Error };
 
     setUser(null);
