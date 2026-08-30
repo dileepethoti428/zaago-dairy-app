@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
-  const { user, loading, userRole, applicationStatus, applicationRejectionReason, accountDeactivated } = useAuth();
+  const { user, loading, userRole, applicationStatus, applicationLoading, applicationRejectionReason, accountDeactivated } = useAuth();
   const location = useLocation();
   const [aalChecked, setAalChecked] = useState(false);
   const [needsMfa, setNeedsMfa] = useState(false);
