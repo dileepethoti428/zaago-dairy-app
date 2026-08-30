@@ -80,6 +80,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Keep application status live: realtime + focus/interval revalidation
+  useEffect(() => {
+    if (!user) return;
+    const userId = user.id;
+
+    const channel = supabase
+      .channel(`partner-application-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'dairy_partner_applications',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchApplicationStatus(userId);
+        }
+      )
+      .subscribe();
+
+    const onFocus = () => fetchApplicationStatus(userId);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    const interval = window.setInterval(() => fetchApplicationStatus(userId), 120000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+      window.clearInterval(interval);
+    };
+  }, [user?.id]);
+
   const fetchUserRole = async (userId: string) => {
     try {
       const { data, error } = await supabase
