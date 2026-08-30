@@ -175,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setApplicationStatus(null);
     setApplicationRejectionReason(null);
     setAccountDeactivated(false);
+    setApplicationLoading(false);
   };
 
   return (
@@ -186,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin, 
       isStaff,
       applicationStatus,
+      applicationLoading,
       applicationRejectionReason,
       accountDeactivated,
       signIn, 
