@@ -1,4 +1,4 @@
-import { Clock, XCircle, LogOut, CheckCircle, ShieldOff, Phone } from 'lucide-react';
+import { Clock, XCircle, LogOut, CheckCircle, ShieldOff, Phone, Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
