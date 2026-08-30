@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          setApplicationLoading(true);
           setTimeout(() => {
             fetchUserRole(session.user.id);
             fetchApplicationStatus(session.user.id);
@@ -52,6 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserRole('staff');
           setApplicationStatus(null);
           setApplicationRejectionReason(null);
+          setAccountDeactivated(false);
+          setApplicationLoading(false);
         }
         
         setLoading(false);
@@ -64,8 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        setApplicationLoading(true);
         fetchUserRole(session.user.id);
         fetchApplicationStatus(session.user.id);
+      } else {
+        setApplicationLoading(false);
       }
       
       setLoading(false);
