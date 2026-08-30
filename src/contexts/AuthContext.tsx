@@ -13,6 +13,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isStaff: boolean;
   applicationStatus: ApplicationStatus | null;
+  applicationLoading: boolean;
   applicationRejectionReason: string | null;
   accountDeactivated: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
