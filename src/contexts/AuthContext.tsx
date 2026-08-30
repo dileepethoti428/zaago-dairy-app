@@ -136,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Error fetching application status:', err);
+    } finally {
+      setApplicationLoading(false);
     }
   };
 
