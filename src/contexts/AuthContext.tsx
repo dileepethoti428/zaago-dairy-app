@@ -13,6 +13,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isStaff: boolean;
   applicationStatus: ApplicationStatus | null;
+  applicationLoading: boolean;
   applicationRejectionReason: string | null;
   accountDeactivated: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<AppRole>('staff');
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null);
+  const [applicationLoading, setApplicationLoading] = useState(true);
   const [applicationRejectionReason, setApplicationRejectionReason] = useState<string | null>(null);
   const [accountDeactivated, setAccountDeactivated] = useState(false);
 
@@ -42,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          setApplicationLoading(true);
           setTimeout(() => {
             fetchUserRole(session.user.id);
             fetchApplicationStatus(session.user.id);
@@ -50,6 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserRole('staff');
           setApplicationStatus(null);
           setApplicationRejectionReason(null);
+          setAccountDeactivated(false);
+          setApplicationLoading(false);
         }
         
         setLoading(false);
@@ -62,8 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        setApplicationLoading(true);
         fetchUserRole(session.user.id);
         fetchApplicationStatus(session.user.id);
+      } else {
+        setApplicationLoading(false);
       }
       
       setLoading(false);
@@ -128,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Error fetching application status:', err);
+    } finally {
+      setApplicationLoading(false);
     }
   };
 
@@ -165,6 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setApplicationStatus(null);
     setApplicationRejectionReason(null);
     setAccountDeactivated(false);
+    setApplicationLoading(false);
   };
 
   return (
@@ -176,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin, 
       isStaff,
       applicationStatus,
+      applicationLoading,
       applicationRejectionReason,
       accountDeactivated,
       signIn, 
