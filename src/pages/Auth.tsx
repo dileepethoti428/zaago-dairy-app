@@ -303,9 +303,18 @@ export default function Auth() {
 
         if (appError) {
           console.error('Error submitting application:', appError);
+          await supabase.auth.signOut();
+          toast({
+            title: 'Application not submitted',
+            description: 'We could not submit your partner application. Please try registering again.',
+            variant: 'destructive',
+          });
+          return;
         }
       }
 
+      // Keep the account signed out until an admin approves the application
+      await supabase.auth.signOut();
       setApplicationSubmitted(true);
     } catch (err) {
       toast({
