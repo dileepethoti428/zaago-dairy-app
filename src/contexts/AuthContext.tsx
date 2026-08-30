@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<AppRole>('staff');
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus | null>(null);
+  const [applicationLoading, setApplicationLoading] = useState(true);
   const [applicationRejectionReason, setApplicationRejectionReason] = useState<string | null>(null);
   const [accountDeactivated, setAccountDeactivated] = useState(false);
 
