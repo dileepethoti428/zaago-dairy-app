@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -65,11 +65,12 @@ export default function Auth() {
     setErrors({});
   };
 
-  // Redirect if already logged in
-  if (user) {
-    navigate(from, { replace: true });
-    return null;
-  }
+  // Redirect authenticated users after render so navigation never runs during render.
+  useEffect(() => {
+    if (user) navigate(from, { replace: true });
+  }, [from, navigate, user]);
+
+  if (user) return null;
 
   // Show submitted screen after sign-up
   if (applicationSubmitted) {

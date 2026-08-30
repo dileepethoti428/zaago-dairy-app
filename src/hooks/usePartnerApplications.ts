@@ -187,12 +187,18 @@ export function useDeactivateAccount() {
 
   return useMutation({
     mutationFn: async (applicationId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('dairy_partner_applications')
         .update({ is_active: false })
-        .eq('id', applicationId);
+        .eq('id', applicationId)
+        .select('id, is_active')
+        .single();
 
       if (error) throw error;
+      if (!data || data.is_active !== false) {
+        throw new Error('The partner account was not deactivated. Please try again.');
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partner-applications'] });
@@ -211,12 +217,18 @@ export function useActivateAccount() {
 
   return useMutation({
     mutationFn: async (applicationId: string) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('dairy_partner_applications')
         .update({ is_active: true })
-        .eq('id', applicationId);
+        .eq('id', applicationId)
+        .select('id, is_active')
+        .single();
 
       if (error) throw error;
+      if (!data || data.is_active !== true) {
+        throw new Error('The partner account was not activated. Please try again.');
+      }
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partner-applications'] });

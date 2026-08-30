@@ -229,7 +229,11 @@ export default function Settings() {
 
   const handleSignOut = async () => {
     setSignOutOpen(false);
-    await signOut();
+    const { error } = await signOut();
+    if (error) {
+      toast.error('Sign out failed. Your session is still active. Please try again.');
+      return;
+    }
     navigate('/auth');
   };
 

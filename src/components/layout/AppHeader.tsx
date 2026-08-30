@@ -32,16 +32,26 @@ import {
 } from '@/components/ui/alert-dialog';
 import zaagoLogo from '@/assets/zaago-logo.jpeg';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 export function AppHeader() {
   const { user, signOut, isAdmin } = useAuth();
   const { selectedCenter, setSelectedCenter, centers, isLoading: centersLoading, canSwitchCenters } = useCenter();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
   const handleSignOut = async () => {
     setSignOutOpen(false);
-    await signOut();
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Sign out failed',
+        description: 'Your session is still active. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     navigate('/auth');
   };
 
