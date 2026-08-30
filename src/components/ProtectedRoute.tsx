@@ -49,7 +49,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     };
   }, [user]);
 
-  if (loading || (user && !aalChecked)) {
+  if (loading || (user && !aalChecked) || (user && applicationLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -70,8 +70,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     return <ApplicationPending status="deactivated" />;
   }
 
-  // Block non-admin users whose application is pending or rejected
-  if (userRole !== 'admin' && applicationStatus === 'pending') {
+  // Block non-admin users whose application is pending, missing or rejected
+  if (userRole !== 'admin' && (applicationStatus === 'pending' || applicationStatus === null)) {
     return <ApplicationPending status="pending" />;
   }
 
