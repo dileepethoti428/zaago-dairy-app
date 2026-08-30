@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 interface ApplicationPendingProps {
   status: 'pending' | 'rejected' | 'deactivated';
@@ -12,9 +13,18 @@ interface ApplicationPendingProps {
 export default function ApplicationPending({ status, rejectionReason }: ApplicationPendingProps) {
   const { signOut } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut();
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: 'Sign out failed',
+        description: 'Your session is still active. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     navigate('/auth');
   };
 

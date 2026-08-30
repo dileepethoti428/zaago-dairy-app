@@ -18,7 +18,7 @@ interface AuthContextType {
   accountDeactivated: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
+  signOut: () => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          setApplicationStatus(null);
+          setApplicationRejectionReason(null);
+          setAccountDeactivated(false);
           setApplicationLoading(true);
           setTimeout(() => {
             fetchUserRole(session.user.id);
@@ -67,6 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
+        setApplicationStatus(null);
+        setApplicationRejectionReason(null);
+        setAccountDeactivated(false);
         setApplicationLoading(true);
         fetchUserRole(session.user.id);
         fetchApplicationStatus(session.user.id);
@@ -156,6 +162,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error fetching application status:', error);
+        // Fail closed instead of preserving a stale approved/active state.
+        setApplicationStatus(null);
+        setApplicationRejectionReason(null);
+        setAccountDeactivated(false);
         return;
       }
 
@@ -202,7 +212,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Current-device sign-out does not depend on a remote logout request, so a
+    // network problem cannot leave this browser authenticated in the UI.
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    if (error) return { error: error as Error };
+
     setUser(null);
     setSession(null);
     setUserRole('staff');
@@ -210,6 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setApplicationRejectionReason(null);
     setAccountDeactivated(false);
     setApplicationLoading(false);
+    return { error: null };
   };
 
   return (
