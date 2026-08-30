@@ -1,4 +1,4 @@
-import { Clock, XCircle, LogOut, CheckCircle, ShieldOff, Phone } from 'lucide-react';
+import { Clock, XCircle, LogOut, CheckCircle, ShieldOff, Phone, Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,19 +78,43 @@ export default function ApplicationPending({ status, rejectionReason }: Applicat
           )}
 
           {status === 'deactivated' && (
-            <div className="rounded-lg bg-muted border border-border p-4 text-left">
-              <div className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div className="space-y-2 text-left">
+              <p className="text-sm font-medium text-foreground">Contact Customer Care</p>
+
+              <a
+                href="https://wa.me/917842343642?text=Hello%2C%20my%20Zaago%20account%20has%20been%20deactivated."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3 hover:bg-accent transition-colors"
+              >
+                <MessageCircle className="h-5 w-5 text-primary flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">Customer Care</p>
-                  <a
-                    href="tel:+917842343642"
-                    className="text-sm text-primary font-semibold hover:underline"
-                  >
-                    +91-7842343642
-                  </a>
+                  <p className="text-sm font-medium text-foreground">WhatsApp Support</p>
+                  <p className="text-xs text-muted-foreground">+91-7842343642</p>
                 </div>
-              </div>
+              </a>
+
+              <a
+                href="mailto:zaago.online@gmail.com?subject=Zaago%20Milk%20Support"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3 hover:bg-accent transition-colors"
+              >
+                <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Email Support</p>
+                  <p className="text-xs text-muted-foreground">zaago.online@gmail.com</p>
+                </div>
+              </a>
+
+              <a
+                href="tel:+917842343642"
+                className="flex items-center gap-3 rounded-lg border border-border bg-muted p-3 hover:bg-accent transition-colors"
+              >
+                <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Call Support</p>
+                  <p className="text-xs text-muted-foreground">+91-7842343642</p>
+                </div>
+              </a>
             </div>
           )}
 

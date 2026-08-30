@@ -1,0 +1,2 @@
+ALTER TABLE public.dairy_partner_applications REPLICA IDENTITY FULL;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.dairy_partner_applications;
