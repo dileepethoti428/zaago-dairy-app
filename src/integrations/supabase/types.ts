@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
@@ -64,6 +64,7 @@ export type Database = {
       }
       admin_notifications: {
         Row: {
+          bug_report_id: string | null
           created_at: string
           id: string
           is_read: boolean
@@ -75,6 +76,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          bug_report_id?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -86,6 +88,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          bug_report_id?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
@@ -96,7 +99,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_bug_report_id_fkey"
+            columns: ["bug_report_id"]
+            isOneToOne: false
+            referencedRelation: "bug_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_pricing_settings: {
         Row: {
@@ -873,6 +884,54 @@ export type Database = {
           },
         ]
       }
+      anonymous_page_views: {
+        Row: {
+          created_at: string
+          id: string
+          path: string
+          viewed_at: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path: string
+          viewed_at?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string
+          viewed_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
+      anonymous_visitors: {
+        Row: {
+          created_at: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       app_config: {
         Row: {
           id: string
@@ -1169,6 +1228,78 @@ export type Database = {
           },
         ]
       }
+      blog_page_settings: {
+        Row: {
+          created_at: string
+          id: boolean
+          introduction: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: boolean
+          introduction: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: boolean
+          introduction?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_posts: {
+        Row: {
+          author_name: string | null
+          content: Json
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          excerpt: string | null
+          id: string
+          published_at: string | null
+          read_minutes: number
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          content?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          read_minutes?: number
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          content?: Json
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          read_minutes?: number
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       bonuses: {
         Row: {
           amount: number
@@ -1196,6 +1327,54 @@ export type Database = {
           party_id?: string
           party_type?: string
           reason?: string | null
+        }
+        Relationships: []
+      }
+      bug_reports: {
+        Row: {
+          admin_notes: string | null
+          attachment_paths: string[]
+          created_at: string
+          current_url: string | null
+          description: string
+          id: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          attachment_paths?: string[]
+          created_at?: string
+          current_url?: string | null
+          description: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          attachment_paths?: string[]
+          created_at?: string
+          current_url?: string | null
+          description?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -5147,6 +5326,30 @@ export type Database = {
         }
         Relationships: []
       }
+      product_review_authors: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_stock_notifications: {
         Row: {
           created_at: string
@@ -5309,6 +5512,7 @@ export type Database = {
           category_id: string | null
           cost_price: number | null
           created_at: string
+          delivery_days: string[] | null
           description: string | null
           discount_percentage: number | null
           gst_percentage: number | null
@@ -5342,6 +5546,7 @@ export type Database = {
           category_id?: string | null
           cost_price?: number | null
           created_at?: string
+          delivery_days?: string[] | null
           description?: string | null
           discount_percentage?: number | null
           gst_percentage?: number | null
@@ -5375,6 +5580,7 @@ export type Database = {
           category_id?: string | null
           cost_price?: number | null
           created_at?: string
+          delivery_days?: string[] | null
           description?: string | null
           discount_percentage?: number | null
           gst_percentage?: number | null
@@ -6000,6 +6206,39 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_cod_settlements: {
+        Row: {
+          amount: number
+          id: string
+          notes: string | null
+          order_id: string
+          seller_id: string
+          settled_at: string
+          settled_by: string | null
+          transaction_ref: string | null
+        }
+        Insert: {
+          amount?: number
+          id?: string
+          notes?: string | null
+          order_id: string
+          seller_id: string
+          settled_at?: string
+          settled_by?: string | null
+          transaction_ref?: string | null
+        }
+        Update: {
+          amount?: number
+          id?: string
+          notes?: string | null
+          order_id?: string
+          seller_id?: string
+          settled_at?: string
+          settled_by?: string | null
+          transaction_ref?: string | null
+        }
+        Relationships: []
+      }
       seller_earnings: {
         Row: {
           commission_amount: number | null
@@ -6187,6 +6426,57 @@ export type Database = {
           },
         ]
       }
+      seller_subscription_settlements: {
+        Row: {
+          amount: number
+          bonus: number
+          commission: number
+          created_at: string
+          fine: number
+          id: string
+          net_amount: number
+          notes: string | null
+          seller_id: string
+          settled_at: string
+          settled_by: string | null
+          subscription_id: string
+          tds: number
+          transaction_ref: string | null
+        }
+        Insert: {
+          amount?: number
+          bonus?: number
+          commission?: number
+          created_at?: string
+          fine?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          seller_id: string
+          settled_at?: string
+          settled_by?: string | null
+          subscription_id: string
+          tds?: number
+          transaction_ref?: string | null
+        }
+        Update: {
+          amount?: number
+          bonus?: number
+          commission?: number
+          created_at?: string
+          fine?: number
+          id?: string
+          net_amount?: number
+          notes?: string | null
+          seller_id?: string
+          settled_at?: string
+          settled_by?: string | null
+          subscription_id?: string
+          tds?: number
+          transaction_ref?: string | null
+        }
+        Relationships: []
+      }
       sellers: {
         Row: {
           aadhaar_back_url: string | null
@@ -6197,14 +6487,17 @@ export type Database = {
           account_number: string | null
           account_type: string | null
           address: Json | null
+          all_category_image_url: string | null
           approval_status: string | null
           approved_at: string | null
           approved_by: string | null
+          auto_schedule_enabled: boolean
           bank_branch: string | null
           bank_name: string | null
           business_description: string | null
           business_license: string | null
           business_name: string | null
+          closing_time: string
           created_at: string
           deleted_at: string | null
           deletion_reason: string | null
@@ -6219,6 +6512,7 @@ export type Database = {
           is_bank_verified: boolean | null
           is_deactivated: boolean | null
           is_deleted: boolean | null
+          is_shop_open: boolean
           kyc_status: string | null
           kyc_submitted_at: string | null
           kyc_verified_at: string | null
@@ -6229,6 +6523,7 @@ export type Database = {
           longitude: number | null
           name: string
           onesignal_player_id: string | null
+          opening_time: string
           pan_image_url: string | null
           pan_number: string | null
           pan_verified: boolean
@@ -6252,14 +6547,17 @@ export type Database = {
           account_number?: string | null
           account_type?: string | null
           address?: Json | null
+          all_category_image_url?: string | null
           approval_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          auto_schedule_enabled?: boolean
           bank_branch?: string | null
           bank_name?: string | null
           business_description?: string | null
           business_license?: string | null
           business_name?: string | null
+          closing_time?: string
           created_at?: string
           deleted_at?: string | null
           deletion_reason?: string | null
@@ -6274,6 +6572,7 @@ export type Database = {
           is_bank_verified?: boolean | null
           is_deactivated?: boolean | null
           is_deleted?: boolean | null
+          is_shop_open?: boolean
           kyc_status?: string | null
           kyc_submitted_at?: string | null
           kyc_verified_at?: string | null
@@ -6284,6 +6583,7 @@ export type Database = {
           longitude?: number | null
           name: string
           onesignal_player_id?: string | null
+          opening_time?: string
           pan_image_url?: string | null
           pan_number?: string | null
           pan_verified?: boolean
@@ -6307,14 +6607,17 @@ export type Database = {
           account_number?: string | null
           account_type?: string | null
           address?: Json | null
+          all_category_image_url?: string | null
           approval_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          auto_schedule_enabled?: boolean
           bank_branch?: string | null
           bank_name?: string | null
           business_description?: string | null
           business_license?: string | null
           business_name?: string | null
+          closing_time?: string
           created_at?: string
           deleted_at?: string | null
           deletion_reason?: string | null
@@ -6329,6 +6632,7 @@ export type Database = {
           is_bank_verified?: boolean | null
           is_deactivated?: boolean | null
           is_deleted?: boolean | null
+          is_shop_open?: boolean
           kyc_status?: string | null
           kyc_submitted_at?: string | null
           kyc_verified_at?: string | null
@@ -6339,6 +6643,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           onesignal_player_id?: string | null
+          opening_time?: string
           pan_image_url?: string | null
           pan_number?: string | null
           pan_verified?: boolean
@@ -9102,6 +9407,7 @@ export type Database = {
         Args: { _customer_id: string; _seller_user_id: string }
         Returns: boolean
       }
+      delete_bug_report: { Args: { p_report_id: string }; Returns: string[] }
       delete_delivery_agent: {
         Args: { agent_uuid: string }
         Returns: undefined
@@ -9504,6 +9810,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_anonymous_analytics: { Args: never; Returns: Json }
       get_auth_user_phone: { Args: { user_email: string }; Returns: string }
       get_available_orders_for_agent: {
         Args: { p_agent_id: string }
@@ -9532,6 +9839,14 @@ export type Database = {
           total: number
         }[]
       }
+      get_bug_report_customer_details: {
+        Args: { p_report_id: string }
+        Returns: {
+          email: string
+          full_name: string
+          phone: string
+        }[]
+      }
       get_calculate_seller_payouts_json: {
         Args: { end_date: string; start_date: string }
         Returns: Json
@@ -9547,6 +9862,7 @@ export type Database = {
           partner_phone: string
         }[]
       }
+      get_closed_seller_ids: { Args: never; Returns: string[] }
       get_compensation_details: {
         Args: { p_compensation_id: string }
         Returns: Json
@@ -9663,6 +9979,7 @@ export type Database = {
           purchase_count: number
         }[]
       }
+      get_maintenance_status: { Args: never; Returns: Json }
       get_mfa_status: {
         Args: never
         Returns: {
@@ -9853,6 +10170,13 @@ export type Database = {
         Returns: {
           agent_id: string
           order_count: number
+        }[]
+      }
+      get_seller_all_category_images: {
+        Args: { p_seller_ids: string[] }
+        Returns: {
+          image_url: string
+          seller_id: string
         }[]
       }
       get_seller_earnings_series: {
@@ -10251,6 +10575,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_seller_shop_open: {
+        Args: { p_seller_user_id: string }
+        Returns: boolean
+      }
       is_user_eligible_for_coupon: {
         Args: { p_coupon_id: string; p_user_id: string }
         Returns: boolean
@@ -10523,6 +10851,10 @@ export type Database = {
           p_subscription_id: string
         }
         Returns: boolean
+      }
+      set_maintenance_mode: {
+        Args: { p_enabled: boolean; p_message?: string }
+        Returns: Json
       }
       settle_cod_automatically: {
         Args: { p_agent_id: string; p_cod_amount: number; p_order_id: string }
@@ -11138,12 +11470,27 @@ export type Database = {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
+      submit_customer_bug_report: {
+        Args: {
+          p_attachment_paths?: string[]
+          p_current_url?: string
+          p_description: string
+          p_priority: string
+          p_title: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
       sync_special_offers_from_products: { Args: never; Returns: undefined }
       sync_user_player_id: {
         Args: { device_info?: Json; player_id: string; target_user_id: string }
         Returns: boolean
       }
       test_subscription_processing: { Args: never; Returns: Json }
+      track_anonymous_page_view: {
+        Args: { p_path: string; p_visitor_id: string }
+        Returns: undefined
+      }
       track_product_view: { Args: { p_product_id: string }; Returns: undefined }
       trigger_immediate_processing_after_vacation_cancel: {
         Args: { p_metadata?: Json; p_reason?: string; p_user_id: string }
@@ -11302,12 +11649,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -11331,11 +11678,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -11356,11 +11703,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -11381,11 +11728,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -11398,11 +11745,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
