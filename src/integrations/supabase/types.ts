@@ -10566,6 +10566,10 @@ export type Database = {
         Returns: string
       }
       is_approved_seller: { Args: { user_uuid?: string }; Returns: boolean }
+      is_center_member: {
+        Args: { _center_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_current_user_admin_v2: { Args: never; Returns: boolean }
       is_location_serviceable: {
         Args: {
